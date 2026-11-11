@@ -1,10 +1,11 @@
 Статусы чисел по файлам:
            table  real  assumed  simulated  total  real_pct
+   climate_daily 46462        0          0  46462     100.0
       crop_areas   160        0          0    160     100.0
           prices     2        5          0      7      28.6
 water_withdrawal     8        0          0      8     100.0
           yields   264        4          0    268      98.5
-           ИТОГО   434        9          0    443      98.0
+           ИТОГО 46896        9          0  46905     100.0
 
 Допущения (assumed): 9
  table      entity          param   year     value  unit                                                                                                                                                                                                                                     source

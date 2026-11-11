@@ -514,3 +514,19 @@
 - quote: В Кызылординской области на полив 122 тыс. га орошаемых земель подано 3,3 млрд кубометров воды.
 - accessed: 2026-11-12
 - note: Подача на дату публикации; по тексту — слова председателя профильного комитета на пресс-конференции в СЦК. Пересчёт: 122 тыс. га = 122 000 га.
+
+## S063
+- url: https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M_MAX,T2M_MIN,RH2M,WS2M,ALLSKY_SFC_SW_DWN,PRECTOTCORR&community=AG&longitude=65.5&latitude=44.8&start=20100101&end=20251231&format=CSV&time-standard=LST
+- document: NASA POWER (Prediction Of Worldwide Energy Resources), Daily API, community AG; сырой файл сохранён: data/raw/nasa_power_daily_44.8N_65.5E_2010-2025.csv
+- location: заголовок файла (строки описания параметров); данные — весь файл, 2010-01-01 … 2025-12-31
+- quote: T2M_MAX MERRA-2 Temperature at 2 Meters Maximum (C) ; T2M_MIN MERRA-2 Temperature at 2 Meters Minimum (C) ; RH2M MERRA-2 Relative Humidity at 2 Meters (%) ; WS2M MERRA-2 Wind Speed at 2 Meters (m/s) ; ALLSKY_SFC_SW_DWN CERES SYN1deg All Sky Surface Shortwave Downward Irradiance (MJ/m^2/day) ; PRECTOTCORR MERRA-2 Precipitation Corrected (mm/day)
+- accessed: 2026-11-12
+- note: Это реанализ MERRA-2 и спутниковый продукт CERES, а не наблюдения станции; ячейка 0.5°×0.625°, средняя высота 122.27 м (из заголовка). Единицы без пересчёта; precip = PRECTOTCORR (мм/сут). Значение -999 = нет данных (не записывается). SHA256 сырого файла: c9ffccf39f1dc53c882181d85401ffe3ed2cbc4c8b9bebeb67b5ab2434577484
+
+## S064
+- url: https://www.ncei.noaa.gov/data/global-summary-of-the-day/access/2010/38062099999.csv
+- document: NOAA NCEI Global Surface Summary of the Day (GSOD), станция 38062099999 «KZYL ORDA, KZ» (44.7666667, 65.5333333, 129.0 м); файлы за 2010–2025 гг. по шаблону …/access/<год>/38062099999.csv; описание формата: https://www.ncei.noaa.gov/data/global-summary-of-the-day/doc/readme.txt; сырые файлы: data/raw/gsod_38062099999_<год>.csv
+- location: столбцы MAX и MIN каждого файла; определения — readme.txt, разделы MAX и MIN
+- quote: MAX - Maximum temperature reported during the day in Fahrenheit to tenths. Missing = 9999.9 ; MIN - Minimum temperature reported during the day in Fahrenheit to tenths. Missing = 9999.9
+- accessed: 2026-11-12
+- note: Пересчёт °F -> °C: (F − 32) × 5/9, округление до 0.01. 9999.9 = нет данных (не записывается). Флаг MAX/MIN «*» = значение взято из ежечасных/синоптических сводок. Осадки (PRCP) не используются: почти все дни без отчёта (флаг I или 99.99). Контрольные суммы: data/raw/SHA256SUMS.
