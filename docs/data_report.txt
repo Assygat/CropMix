@@ -5,9 +5,10 @@
      crops_fao56     0       69          0     69       0.0
       efficiency     0        7          0      7       0.0
           prices     2        5          0      7      28.6
+      river_flow    18        0          0     18     100.0
 water_withdrawal     8        0          0      8     100.0
           yields   264        4          0    268      98.5
-           ИТОГО 46896       85          0  46981      99.8
+           ИТОГО 46914       85          0  46999      99.8
 
 Допущения (assumed): 85
       table           entity          param   year      value     unit                                                                                                                                                                                                                                     source
