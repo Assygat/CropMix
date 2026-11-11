@@ -530,3 +530,67 @@
 - quote: MAX - Maximum temperature reported during the day in Fahrenheit to tenths. Missing = 9999.9 ; MIN - Minimum temperature reported during the day in Fahrenheit to tenths. Missing = 9999.9
 - accessed: 2026-11-12
 - note: Пересчёт °F -> °C: (F − 32) × 5/9, округление до 0.01. 9999.9 = нет данных (не записывается). Флаг MAX/MIN «*» = значение взято из ежечасных/синоптических сводок. Осадки (PRCP) не используются: почти все дни без отчёта (флаг I или 99.99). Контрольные суммы: data/raw/SHA256SUMS.
+
+## S065
+- url: https://www.fao.org/4/x0490e/x0490e0b.htm
+- document: Allen R.G., Pereira L.S., Raes D., Smith M. (1998). Crop evapotranspiration — Guidelines for computing crop water requirements. FAO Irrigation and Drainage Paper 56, Chapter 6; сырой файл: data/raw/fao56_chapter6_x0490e0b.htm
+- location: TABLE 12 (Kc_ini, Kc_mid, Kc_end, макс. высота h), строки Rice; TABLE 11 (длины стадий L_ini, L_dev, L_mid, L_late), строка Rice — Dec; May / Tropics; Mediterranean — используется сев в мае
+- quote: Rice | 1.05 | 1.20 | 0.90-0.60 | 1 ; Table 11: Rice | 30 | 30 | 60 | 30 | 150 | Dec; May | Tropics; Mediterranean
+- accessed: 2026-11-12
+- note: Литературные значения FAO-56 для субгумидного климата (RHmin ≈ 45 %, u2 ≈ 2 м/с), а не измерения в Кызылординской области; поправка Kc_mid/Kc_end на климат (FAO-56 ур. 62) будет применена в движке. Пустая ячейка Kc_ini у культуры в табл. 12 означает значение её группы (строка группы в цитате).
+
+## S066
+- url: https://www.fao.org/4/x0490e/x0490e0b.htm
+- document: Allen R.G., Pereira L.S., Raes D., Smith M. (1998). Crop evapotranspiration — Guidelines for computing crop water requirements. FAO Irrigation and Drainage Paper 56, Chapter 6; сырой файл: data/raw/fao56_chapter6_x0490e0b.htm
+- location: TABLE 12 (Kc_ini, Kc_mid, Kc_end, макс. высота h), строки i. Cereals, Spring Wheat; TABLE 11 (длины стадий L_ini, L_dev, L_mid, L_late), строка Barley/Oats/Wheat — вторая строка: March/Apr, 35-45 °L
+- quote: i. Cereals | 0.3 | 1.15 | 0.4 ; Spring Wheat |  | 1.15 | 0.25-0.4^10 | 1 ; Table 11: Barley/Oats/Wheat | 15 | 25 | 50 | 30 | 120 | November | Central India | 20 | 25 | 60 | 30 | 135 | March/Apr | 35-45 °L
+- accessed: 2026-11-12
+- note: Литературные значения FAO-56 для субгумидного климата (RHmin ≈ 45 %, u2 ≈ 2 м/с), а не измерения в Кызылординской области; поправка Kc_mid/Kc_end на климат (FAO-56 ур. 62) будет применена в движке. Пустая ячейка Kc_ini у культуры в табл. 12 означает значение её группы (строка группы в цитате).
+
+## S067
+- url: https://www.fao.org/4/x0490e/x0490e0b.htm
+- document: Allen R.G., Pereira L.S., Raes D., Smith M. (1998). Crop evapotranspiration — Guidelines for computing crop water requirements. FAO Irrigation and Drainage Paper 56, Chapter 6; сырой файл: data/raw/fao56_chapter6_x0490e0b.htm
+- location: TABLE 12 (Kc_ini, Kc_mid, Kc_end, макс. высота h), строки d. Roots and Tubers, Potato; TABLE 11 (длины стадий L_ini, L_dev, L_mid, L_late), строка Potato — вторая строка: May, Continental Climate
+- quote: d. Roots and Tubers | 0.5 | 1.10 | 0.95 ; Potato |  | 1.15 | 0.75^4 | 0.6 ; Table 11: Potato | 25 | 30 | 30/45 | 30 | 115/130 | Jan/Nov | (Semi) Arid Climate | 25 | 30 | 45 | 30 | 130 | May | Continental Climate
+- accessed: 2026-11-12
+- note: Литературные значения FAO-56 для субгумидного климата (RHmin ≈ 45 %, u2 ≈ 2 м/с), а не измерения в Кызылординской области; поправка Kc_mid/Kc_end на климат (FAO-56 ур. 62) будет применена в движке. Пустая ячейка Kc_ini у культуры в табл. 12 означает значение её группы (строка группы в цитате).
+
+## S068
+- url: https://www.fao.org/4/x0490e/x0490e0b.htm
+- document: Allen R.G., Pereira L.S., Raes D., Smith M. (1998). Crop evapotranspiration — Guidelines for computing crop water requirements. FAO Irrigation and Drainage Paper 56, Chapter 6; сырой файл: data/raw/fao56_chapter6_x0490e0b.htm
+- location: TABLE 12 (Kc_ini, Kc_mid, Kc_end, макс. высота h), строки Alfalfa Hay; TABLE 11 (длины стадий L_ini, L_dev, L_mid, L_late), строка Alfalfa, total season ^4 — total season: last -4°C in spring until first -4°C in fall
+- quote: Alfalfa Hay |  |  |  |  |  | - averaged cutting effects | 0.40 | 0.95^13 | 0.90 | 0.7 ; Table 11: Alfalfa, total season ^4 | 10 | 30 | var. | var. | var. |  | last -4°C in spring until first -4°C in fall
+- accessed: 2026-11-12
+- note: Литературные значения FAO-56 для субгумидного климата (RHmin ≈ 45 %, u2 ≈ 2 м/с), а не измерения в Кызылординской области; поправка Kc_mid/Kc_end на климат (FAO-56 ур. 62) будет применена в движке. Пустая ячейка Kc_ini у культуры в табл. 12 означает значение её группы (строка группы в цитате).
+
+## S069
+- url: https://www.fao.org/4/x0490e/x0490e0b.htm
+- document: Allen R.G., Pereira L.S., Raes D., Smith M. (1998). Crop evapotranspiration — Guidelines for computing crop water requirements. FAO Irrigation and Drainage Paper 56, Chapter 6; сырой файл: data/raw/fao56_chapter6_x0490e0b.htm
+- location: TABLE 12 (Kc_ini, Kc_mid, Kc_end, макс. высота h), строки Vegetables - Solanum Family (Solanaceae), Tomato; TABLE 11 (длины стадий L_ini, L_dev, L_mid, L_late), строка Tomato — пятая строка: April/May, Mediterranean
+- quote: Vegetables - Solanum Family (Solanaceae) | 0.6 | 1.15 | 0.80 ; Tomato |  | 1.15^2 | 0.70-0.90 | 0.6 ; Table 11: Tomato | 30 | 40 | 40 | 25 | 135 | January | Arid Region | 35 | 40 | 50 | 30 | 155 | Apr/May | Calif., USA | 25 | 40 | 60 | 30 | 155 | Jan | Calif. Desert, USA | 35 | 45 | 70 | 30 | 180 | Oct/Nov | Arid Region | 30 | 40 | 45 | 30 | 145 | April/May | Mediterranean
+- accessed: 2026-11-12
+- note: Литературные значения FAO-56 для субгумидного климата (RHmin ≈ 45 %, u2 ≈ 2 м/с), а не измерения в Кызылординской области; поправка Kc_mid/Kc_end на климат (FAO-56 ур. 62) будет применена в движке. Пустая ячейка Kc_ini у культуры в табл. 12 означает значение её группы (строка группы в цитате).
+
+## S070
+- url: https://www.fao.org/4/x0490e/x0490e0b.htm
+- document: Allen R.G., Pereira L.S., Raes D., Smith M. (1998). Crop evapotranspiration — Guidelines for computing crop water requirements. FAO Irrigation and Drainage Paper 56, Chapter 6; сырой файл: data/raw/fao56_chapter6_x0490e0b.htm
+- location: TABLE 12 (Kc_ini, Kc_mid, Kc_end, макс. высота h), строки c. Vegetables - Cucumber Family (Cucurbitaceae), Sweet Melons, Watermelon; TABLE 11 (длины стадий L_ini, L_dev, L_mid, L_late), строка Sweet melons — первая строка: May, Mediterranean
+- quote: c. Vegetables - Cucumber Family (Cucurbitaceae) | 0.5 | 1.00 | 0.80 ; Sweet Melons |  | 1.05 | 0.75 | 0.4 ; Watermelon | 0.4 | 1.00 | 0.75 | 0.4 ; Table 11: Sweet melons | 25 | 35 | 40 | 20 | 120 | May | Mediterranean
+- accessed: 2026-11-12
+- note: Литературные значения FAO-56 для субгумидного климата (RHmin ≈ 45 %, u2 ≈ 2 м/с), а не измерения в Кызылординской области; поправка Kc_mid/Kc_end на климат (FAO-56 ур. 62) будет применена в движке. Пустая ячейка Kc_ini у культуры в табл. 12 означает значение её группы (строка группы в цитате).
+
+## S071
+- url: https://www.fao.org/4/x0490e/x0490e0b.htm
+- document: Allen R.G., Pereira L.S., Raes D., Smith M. (1998). Crop evapotranspiration — Guidelines for computing crop water requirements. FAO Irrigation and Drainage Paper 56, Chapter 6; сырой файл: data/raw/fao56_chapter6_x0490e0b.htm
+- location: TABLE 12 (Kc_ini, Kc_mid, Kc_end, макс. высота h), строки Oil Crops, Safflower; TABLE 11 (длины стадий L_ini, L_dev, L_mid, L_late), строка Safflower — первая строка: April, California, USA
+- quote: Oil Crops | 0.35 | 1.15 | 0.35 ; Safflower |  | 1.0-1.15^9 | 0.25 | 0.8 ; Table 11: Safflower | 20 | 35 | 45 | 25 | 125 | April | California, USA
+- accessed: 2026-11-12
+- note: Литературные значения FAO-56 для субгумидного климата (RHmin ≈ 45 %, u2 ≈ 2 м/с), а не измерения в Кызылординской области; поправка Kc_mid/Kc_end на климат (FAO-56 ур. 62) будет применена в движке. Пустая ячейка Kc_ini у культуры в табл. 12 означает значение её группы (строка группы в цитате).
+
+## S072
+- url: https://www.fao.org/4/x0490e/x0490e0b.htm
+- document: Allen R.G., Pereira L.S., Raes D., Smith M. (1998). Crop evapotranspiration — Guidelines for computing crop water requirements. FAO Irrigation and Drainage Paper 56, Chapter 6; сырой файл: data/raw/fao56_chapter6_x0490e0b.htm
+- location: TABLE 12 (Kc_ini, Kc_mid, Kc_end, макс. высота h), строки i. Cereals, Maize, Field (grain) (field corn); TABLE 11 (длины стадий L_ini, L_dev, L_mid, L_late), строка Maize (grain) — пятая строка: April, Spain (spr, sum.); Calif.
+- quote: i. Cereals | 0.3 | 1.15 | 0.4 ; Maize, Field (grain) (field corn) |  | 1.20 | 0.60-0.35^11 | 2 ; Table 11: Maize (grain) | 30 | 50 | 60 | 40 | 180 | April | East Africa (alt.) | 25 | 40 | 45 | 30 | 140 | Dec/Jan | Arid Climate | 20 | 35 | 40 | 30 | 125 | June | Nigeria (humid) | 20 | 35 | 40 | 30 | 125 | October | India (dry, cool) | 30 | 40 | 50 | 30 | 150 | April | Spain (spr, sum.); Calif.
+- accessed: 2026-11-12
+- note: Литературные значения FAO-56 для субгумидного климата (RHmin ≈ 45 %, u2 ≈ 2 м/с), а не измерения в Кызылординской области; поправка Kc_mid/Kc_end на климат (FAO-56 ур. 62) будет применена в движке. Пустая ячейка Kc_ini у культуры в табл. 12 означает значение её группы (строка группы в цитате).
