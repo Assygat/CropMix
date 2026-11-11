@@ -474,3 +474,43 @@
 - quote: Сено | Республика Казахстан: 33992 | Кызылординская: 49651 (в теңге за тонну, Октябрь 2026г.)
 - accessed: 2026-11-12
 - note: Цена одного месяца (октябрь 2026), без НДС и транспортировки.
+
+## S058
+- url: https://ewsdata.rightsindevelopment.org/files/documents/87/WB-P170187.pdf
+- document: The World Bank. North Aral Sea Development and Revitalization Project (P170187). Project Information Document (PID), Concept Stage, Date Prepared/Updated: 04-Dec-2019, Report No: PIDC26485 (копия документа на ewsdata.rightsindevelopment.org)
+- location: стр. 6 (Page 6 of 14), пункт 14
+- quote: On average, the water consumption of agriculture sector in Kyzylorda region is around 3.5-4 km3 a year or almost 1/3 of the annual River flow.
+- accessed: 2026-11-12
+- note: Пересчёт 1 км³ = 1 000 000 000 м³. В источнике «water consumption» сельского хозяйства, многолетнее среднее; годы, к которым относится оценка, не указаны.
+
+## S059
+- url: https://kyzylorda-news.kz/ru/selskoe-hozyajstvo/ustanovlen-limit-vody-dlya-orosheniya-v-kyzylordinskoj-oblasti-04-06-2024
+- document: «Установлен лимит воды для орошения в Кызылординской области», kyzylorda-news.kz, 04.06.2024 09:58
+- location: текст статьи, абзац о лимите на вегетационный период
+- quote: Как стало известно в ходе брифинга, на нынешний вегетационный период лимит воды для орошения в Кызылординской области согласно статье 82 Водного кодекса РК на основании прогнозириуемого уровня воды установлен на уровне 3,7 млрд кубометров.
+- accessed: 2026-11-12
+- note: Лимит, а не фактический водозабор. Опечатка «прогнозириуемого» — как в источнике.
+
+## S060
+- url: https://kapital.kz/gosudarstvo/139370/v-kyzylordinskoj-oblasti-na-selhoznuzhdy-zabrali-905percent-ot-zaplanirovannogo-obuema-vody.html
+- document: «В Кызылординской области на сельхознужды забрали 90,5% от запланированного объема воды», Kapital.kz, 04.08.2025 09:21, со ссылкой на пресс-службу Министерства водных ресурсов и ирригации РК
+- location: текст статьи, второй абзац
+- quote: На сегодня общий водозабор в регионе составляет 3,03 млрд кубометров при плане в 3,35 млрд кубометров.
+- accessed: 2026-11-12
+- note: Фактический водозабор на сельхознужды на 04.08.2025 (сезон не завершён) и план на поливной период.
+
+## S061
+- url: https://24.kz/ru/news/social/760633-kyzylordinskaya-oblast-sokrashchaet-potreblenie-vody-iz-syrdari
+- document: «Кызылординская область сокращает потребление воды из Сырдарьи», 24.kz, 27.03.2026 09:32
+- location: текст статьи, второй абзац
+- quote: Лимит для орошения сельхозугодий в этом году в Кызылординской области 3 миллиарда 200 миллионов кубометров воды.
+- accessed: 2026-11-12
+- note: Лимит, а не фактический водозабор.
+
+## S062
+- url: https://mtrk.kz/ru/2026/09/17/bolee-111-mlrd-kubometrov-vody-ispolzo/
+- document: «Более 11,1 млрд кубометров воды использовано для орошения посевных площадей в Казахстане», МТРК (дата 17.09.2026 — по адресу страницы; на самой странице дата не найдена)
+- location: текст статьи, абзац об Арало-Сырдарьинском бассейне
+- quote: В Кызылординской области на полив 122 тыс. га орошаемых земель подано 3,3 млрд кубометров воды.
+- accessed: 2026-11-12
+- note: Подача на дату публикации; по тексту — слова председателя профильного комитета на пресс-конференции в СЦК. Пересчёт: 122 тыс. га = 122 000 га.

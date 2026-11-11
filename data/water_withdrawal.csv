@@ -1,0 +1,9 @@
+entity,param,year,measure,value,unit,source,status
+kyzylorda_agriculture,water_withdrawal,,average_annual_low,3500000000,m3,S058,real
+kyzylorda_agriculture,water_withdrawal,,average_annual_high,4000000000,m3,S058,real
+kyzylorda_irrigation,water_withdrawal,2024,limit_vegetation,3700000000,m3,S059,real
+kyzylorda_irrigation,water_withdrawal,2025,plan_vegetation,3350000000,m3,S060,real
+kyzylorda_irrigation,water_withdrawal,2025,actual_to_2025-08-04,3030000000,m3,S060,real
+kyzylorda_irrigation,water_withdrawal,2026,limit_vegetation,3200000000,m3,S061,real
+kyzylorda_irrigation,water_withdrawal,2026,supplied_to_2026-09-17,3300000000,m3,S062,real
+kyzylorda_irrigation,irrigated_area,2026,irrigated_to_2026-09-17,122000,ha,S062,real

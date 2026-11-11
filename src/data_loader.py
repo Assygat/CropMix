@@ -64,6 +64,7 @@ PARAMS = {
     "eff_field": ("fraction", 0.1, 1.0),
     "eff_canal": ("fraction", 0.1, 1.0),
     "water_withdrawal": ("m3", 0, 50_000_000_000),
+    "irrigated_area": ("ha", 0, 2_000_000),
     "river_flow": ("m3", 0, 100_000_000_000),
 }
 

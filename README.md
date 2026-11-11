@@ -9,6 +9,7 @@
 - План работы: [docs/plan.md](docs/plan.md)
 - Правила проекта: [CLAUDE.md](CLAUDE.md)
 - Источники данных: [data/SOURCES.md](data/SOURCES.md)
+- Ограничения модели и данных: [docs/limitations.md](docs/limitations.md)
 
 ## Установка (Windows)
 
