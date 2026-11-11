@@ -1,0 +1,16 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Результаты расчётов пересоздаются скриптами
+outputs/
+
+# Личные настройки Claude Code
+.claude/settings.local.json
+
+# Системное
+.DS_Store
+Thumbs.db
+desktop.ini
