@@ -1,0 +1,8 @@
+entity,param,year,measure,value,unit,source,status
+kyzylorda_canals,eff_canal,,pessimistic,0.40,fraction,"Сценарное допущение, не измерение: пессимистичный сценарий; по заявлению сенатора о потерях около 2 млрд м³/год (S074) при заборе 3.3–4.0 млрд м³ (S058, S062) КПД каналов ≈ 0.39–0.50",assumed
+kyzylorda_canals,eff_canal,,low,0.50,fraction,"Оценка, не измерение: нижняя граница согласованного диапазона 0.5–0.65 для старых земляных каналов; FAO (S073) — длинные земляные каналы 60–80 %, плохое обслуживание снижает до 50 %; сенатор: эффективность не выше 60 % (S074)",assumed
+kyzylorda_canals,eff_canal,,base,0.575,fraction,"Оценка, не измерение: середина согласованного диапазона 0.5–0.65 (S073, S074)",assumed
+kyzylorda_canals,eff_canal,,high,0.65,fraction,"Оценка, не измерение: верхняя граница согласованного диапазона 0.5–0.65 (S073, S074)",assumed
+kyzylorda_fields,eff_field,,low,0.50,fraction,"Сценарий чувствительности: FAO 60 % для поверхностного полива (S073) минус 0.1 — «недостаток дисциплины может снизить» значение",assumed
+kyzylorda_fields,eff_field,,base,0.60,fraction,"Литературное значение FAO для поверхностного полива (border, furrow, basin) 60 % (S073); измерений по области нет",assumed
+kyzylorda_fields,eff_field,,high,0.70,fraction,"Сценарий чувствительности: FAO 60 % (S073) плюс 0.1 — частичный переход на более эффективный полив; не источник",assumed

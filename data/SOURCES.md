@@ -594,3 +594,19 @@
 - quote: i. Cereals | 0.3 | 1.15 | 0.4 ; Maize, Field (grain) (field corn) |  | 1.20 | 0.60-0.35^11 | 2 ; Table 11: Maize (grain) | 30 | 50 | 60 | 40 | 180 | April | East Africa (alt.) | 25 | 40 | 45 | 30 | 140 | Dec/Jan | Arid Climate | 20 | 35 | 40 | 30 | 125 | June | Nigeria (humid) | 20 | 35 | 40 | 30 | 125 | October | India (dry, cool) | 30 | 40 | 50 | 30 | 150 | April | Spain (spr, sum.); Calif.
 - accessed: 2026-11-12
 - note: Литературные значения FAO-56 для субгумидного климата (RHmin ≈ 45 %, u2 ≈ 2 м/с), а не измерения в Кызылординской области; поправка Kc_mid/Kc_end на климат (FAO-56 ур. 62) будет применена в движке. Пустая ячейка Kc_ini у культуры в табл. 12 означает значение её группы (строка группы в цитате).
+
+## S073
+- url: https://www.fao.org/3/t7202e/t7202e08.htm
+- document: FAO. Irrigation Water Management: Training Manual No. 4 — Irrigation Scheduling, Annex I: Irrigation efficiencies; сырой файл: data/raw/fao_t7202e08_annex1_irrigation_efficiencies.htm
+- location: Table 7 (Indicative values of the conveyance efficiency (ec) for adequately maintained canals) и Table 8 (Indicative values of the field application efficiency (ea)), текст между таблицами
+- quote: Table 7 . INDICATIVE VALUES OF THE CONVEYANCE EFFICIENCY (ec) FOR ADEQUATELY MAINTAINED CANALS | Earthen canals | Lined canals | Soil type | Sand | Loam | Clay | Canal length | Long (> 2000m) | 60% | 70% | 80% | 95% | Medium (200-2000m) | 70% | 75% | 85% | 95% | Short (< 200m) | 80% | 85% | 90% | 95% ; bad maintenance may lower the values of Table 7 by as much as 50%. ; Table 8 . INDICATIVE VALUES OF THE FIELD APPLICATION EFFICIENCY (ea) Irrigation methods | Field application efficiency | Surface irrigation (border, furrow, basin) | 60% | Sprinkler irrigation | 75% | Drip irrigation | 90% ; A scheme irrigation efficiency of 50-60% is good; 40% is reasonable, while a scheme Irrigation efficiency of 20-30% is poor.
+- accessed: 2026-11-12
+- note: Ориентировочные литературные значения FAO для любых схем, не измерения в Кызылординской области. В цитате пустые ячейки таблицы опущены.
+
+## S074
+- url: https://astanatv.kz/ru/news/168614/
+- document: «Кызылординская область ежегодно теряет миллиарды кубометров воды, - сенатор», Astana TV, 14.05.2026 19:30 (депутатский запрос сенатора Р. Рустемова)
+- location: текст сюжета, второй абзац и прямая речь
+- quote: Сегодня их эффективность не превышает 60 процентов, а вода буквально уходит в землю. ; Ежегодно через каналы с грунтовым покрытием теряется около двух миллиардов кубометров воды.
+- accessed: 2026-11-12
+- note: Оценка депутата в депутатском запросе, а не техническое измерение КПД; метод оценки не указан.
