@@ -1,0 +1,7 @@
+entity,param,year,value,unit,source,status
+nasa_power_44.8N_65.5E,lat,,44.8,deg,S088,real
+nasa_power_44.8N_65.5E,lon,,65.5,deg,S088,real
+nasa_power_44.8N_65.5E,elevation,,122.27,m,S088,real
+gsod_38062_kyzylorda,lat,,44.7666667,deg,S089,real
+gsod_38062_kyzylorda,lon,,65.5333333,deg,S089,real
+gsod_38062_kyzylorda,elevation,,129.0,m,S089,real

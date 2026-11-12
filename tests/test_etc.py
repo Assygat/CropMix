@@ -61,9 +61,38 @@ def _synthetic_inputs():
     return crops, pd.DataFrame(rows)
 
 
+def _sites(entity=etc.NASA_ENTITY, lat=44.8, elevation=122.27):
+    return pd.DataFrame({"entity": entity, "param": ["lat", "elevation"], "value": [lat, elevation]})
+
+
+def test_site_coords_from_data_and_missing_entity():
+    assert etc.site_coords(_sites(), etc.NASA_ENTITY) == (44.8, 122.27)
+    # для другого источника координаты NASA не подставляются молча
+    with pytest.raises(ValueError, match="climate_sites"):
+        etc.site_coords(_sites(), "gsod_38062_kyzylorda")
+
+
+def test_real_climate_sites_have_source_and_status():
+    # data/climate_sites.csv проходит загрузчик (real -> запись с цитатой в SOURCES.md)
+    from src.data_loader import load_all
+    sites = load_all()["climate_sites"]
+    nasa = sites[sites["entity"] == etc.NASA_ENTITY]
+    assert set(nasa["param"]) >= {"lat", "elevation"}
+    assert set(nasa["status"]) == {"real"} and set(nasa["source"]) == {"S088"}
+    assert etc.site_coords(sites, etc.NASA_ENTITY) == pytest.approx((44.8, 122.27))
+
+
+def test_latitude_from_sites_changes_et0():
+    # Широта действительно берётся из climate_sites: севернее летом Ra и ET0 другие
+    crops, climate = _synthetic_inputs()
+    s1, _ = etc.crop_water_tables(crops, climate, _sites(lat=44.8), years=[2020])
+    s2, _ = etc.crop_water_tables(crops, climate, _sites(lat=30.0), years=[2020])
+    assert not np.allclose(s1["et0_mm"], s2["et0_mm"])
+
+
 def test_crop_water_tables_complete_and_consistent():
     crops, climate = _synthetic_inputs()
-    season, daily = etc.crop_water_tables(crops, climate, years=[2020, 2021])
+    season, daily = etc.crop_water_tables(crops, climate, _sites(), years=[2020, 2021])
     # ни одна культура и ни один год не пропали
     assert sorted(season["crop"].unique()) == ["a", "b"]
     assert len(season) == 4
@@ -81,6 +110,6 @@ def test_crop_water_tables_complete_and_consistent():
 def test_wind_factor_lowers_etc():
     # Диагностика: меньше ветра при сухом воздухе -> меньше ET0 и Kc -> меньше ETc
     crops, climate = _synthetic_inputs()
-    base, _ = etc.crop_water_tables(crops, climate, years=[2020])
-    calm, _ = etc.crop_water_tables(crops, climate, years=[2020], wind_factor=0.84)
+    base, _ = etc.crop_water_tables(crops, climate, _sites(), years=[2020])
+    calm, _ = etc.crop_water_tables(crops, climate, _sites(), years=[2020], wind_factor=0.84)
     assert (calm["etc_mm"].to_numpy() < base["etc_mm"].to_numpy()).all()

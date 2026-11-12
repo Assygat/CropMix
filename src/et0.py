@@ -155,6 +155,21 @@ def et0_hargreaves(tmax, tmin, lat_deg, doy):
 
 # --- Применение к data/climate_daily.csv ---
 
+def pivot_daily(sub):
+    """«Длинная» таблица одного источника -> «широкая» (индекс — дата, колонки — параметры).
+
+    Повтор пары (date, param) — ошибка: молча брать первое значение нельзя.
+    """
+    dup = sub.duplicated(subset=["date", "param"], keep=False)
+    if dup.any():
+        first = sub.loc[dup, ["date", "param"]].iloc[0]
+        raise ValueError(f"Повтор в климатических данных: {first['date']} {first['param']} "
+                         f"({int(dup.sum())} строк)")
+    wide = sub.pivot(index="date", columns="param", values="value")
+    wide.index = pd.to_datetime(wide.index)
+    return wide.sort_index()
+
+
 PM_PARAMS = ["tmax", "tmin", "rh_mean", "u2", "rs"]
 # Единицы, в которых формулы FAO-56 ждут входы (совпадают с реестром src.data_loader.PARAMS).
 # u2 — ветер именно на 2 м: другая высота пересчитывается wind_at_2m до записи в данные.
@@ -179,12 +194,11 @@ def et0_from_climate(climate, entity, lat_deg, elevation_m, method="pm"):
             units = set(sub.loc[sub["param"] == param, "unit"])
             if units and units != {EXPECTED_UNITS[param]}:
                 raise ValueError(f"{param}: единицы {sorted(units)}, нужны {EXPECTED_UNITS[param]!r}")
-    wide = sub.pivot_table(index="date", columns="param", values="value", aggfunc="first")
+    wide = pivot_daily(sub)
     missing = [p for p in need if p not in wide.columns]
     if missing:
         raise ValueError(f"Для метода {method!r} у {entity!r} нет параметров: {missing}")
     wide = wide[need].dropna()
-    wide.index = pd.to_datetime(wide.index)
     doy = wide.index.day_of_year.to_numpy()
 
     if method == "pm":

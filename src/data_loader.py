@@ -43,6 +43,10 @@ PARAMS = {
     "rs": ("MJ/m2/day", 0, 40),
     "sunshine": ("h", 0, 24),
     "precip": ("mm", 0, 300),
+    # Координаты точки климата (data/climate_sites.csv)
+    "lat": ("deg", -90, 90),
+    "lon": ("deg", -180, 180),
+    "elevation": ("m", -500, 9000),
     # Культуры (FAO-56)
     "kc_ini": ("-", 0.1, 1.5),
     "kc_mid": ("-", 0.1, 1.5),

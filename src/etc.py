@@ -10,15 +10,13 @@
 
 import pandas as pd
 
-from src.et0 import et0_from_climate
+from src.et0 import et0_from_climate, pivot_daily
 from src.kc import crop_params, daily_kc
 from src.units import mm_to_m3
 
-# Точка климата NASA POWER (S063): широта и долгота — из запроса API,
-# высота ячейки 122.27 м — из заголовка файла (примечание к S063).
+# Основной источник климата (решение автора 1). Его широта и высота — не здесь,
+# а в data/climate_sites.csv (S088).
 NASA_ENTITY = "nasa_power_44.8N_65.5E"
-NASA_LAT_DEG = 44.8
-NASA_ELEVATION_M = 122.27
 YEARS = range(2010, 2026)
 
 DAILY_COLUMNS = ["crop", "year", "date", "et0_mm", "kc", "etc_mm"]
@@ -53,14 +51,27 @@ def climate_wide(climate, entity=NASA_ENTITY):
     sub = climate[climate["entity"] == entity]
     if sub.empty:
         raise ValueError(f"В климатических данных нет источника {entity!r}")
-    wide = sub.pivot_table(index="date", columns="param", values="value", aggfunc="first")
-    wide.index = pd.to_datetime(wide.index)
-    return wide.sort_index()
+    return pivot_daily(sub)
 
 
-def crop_water_tables(crops, climate, years=YEARS, entity=NASA_ENTITY,
-                      lat_deg=NASA_LAT_DEG, elevation_m=NASA_ELEVATION_M, wind_factor=1.0):
+def site_coords(sites, entity):
+    """(широта °, высота м) точки климата из data/climate_sites.csv.
+
+    Нет записи для entity — ошибка: координаты одной точки нельзя молча
+    подставить для другой.
+    """
+    sub = sites[sites["entity"] == entity]
+    values = dict(zip(sub["param"], sub["value"].astype(float)))
+    missing = [p for p in ("lat", "elevation") if p not in values]
+    if missing:
+        raise ValueError(f"В climate_sites нет {missing} для {entity!r}")
+    return values["lat"], values["elevation"]
+
+
+def crop_water_tables(crops, climate, sites, years=YEARS, entity=NASA_ENTITY, wind_factor=1.0):
     """ETc для всех культур из crops_fao56 за годы years.
+
+    sites — таблица data/climate_sites.csv (широта и высота точки климата entity).
 
     Возвращает (season, daily):
       season — строка на культуру × год (SEASON_COLUMNS);
@@ -71,6 +82,7 @@ def crop_water_tables(crops, climate, years=YEARS, entity=NASA_ENTITY,
     в модели всегда 1.0). Действует и на ET0, и на поправку Kc.
     """
     years = list(years)
+    lat_deg, elevation_m = site_coords(sites, entity)
     clim_long = climate
     if wind_factor != 1.0:
         mask = (climate["entity"] == entity) & (climate["param"] == "u2")

@@ -127,6 +127,35 @@ def test_alfalfa_season_shorter_than_stages_raises():
         kc.daily_kc(ALFALFA, 2022, _climate(2022, "2022-06-01", "2022-07-21"))
 
 
+@pytest.mark.parametrize("year", [2019, 2020, 2021, 2024])
+def test_sowing_date_same_calendar_day_in_leap_and_normal_years(year):
+    # plant_doy — номер дня невисокосного года: 135 = 15 мая, 74 = 15 марта, 121 = 1 мая
+    assert kc.sowing_date(135, year) == pd.Timestamp(year, 5, 15)
+    assert kc.sowing_date(74, year) == pd.Timestamp(year, 3, 15)
+    assert kc.sowing_date(121, year) == pd.Timestamp(year, 5, 1)
+
+
+def test_leap_year_season_same_dates_and_length():
+    # Рис: сев 15 мая и конец 11 октября (150 дней) и в 2020 (високосный), и в 2021
+    rice = {"kc_ini": 1.05, "kc_mid": 1.20, "kc_end": 0.75, "max_height": 1.0,
+            "l_ini": 30, "l_dev": 30, "l_mid": 60, "l_late": 30, "plant_doy": 135}
+    for year in (2020, 2021):
+        s, info = kc.daily_kc(rice, year, _climate(year, f"{year}-03-10", f"{year}-11-20"))
+        assert info["start"] == pd.Timestamp(year, 5, 15)
+        assert info["end"] == pd.Timestamp(year, 10, 11)
+        assert len(s) == 150
+
+
+def test_invalid_plant_doy_and_fractional_stage():
+    with pytest.raises(ValueError, match="plant_doy"):
+        kc.sowing_date(366, 2020)
+    with pytest.raises(ValueError, match="plant_doy"):
+        kc.sowing_date(135.5, 2021)
+    # дробная длина стадии — ошибка, а не усечение 30.9 -> 30
+    with pytest.raises(ValueError, match="l_dev"):
+        kc.kc_curve(0.3, 1.1, 0.5, 10, 30.9, 10, 10)
+
+
 def test_fixed_calendar_crop_uses_plant_doy():
     # Культура с plant_doy: сев doy 135 = 15 мая (невисокосный год), стадии 30/30/60/30 = 150 дней
     rice = {"kc_ini": 1.05, "kc_mid": 1.20, "kc_end": 0.75, "max_height": 1.0,

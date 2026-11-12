@@ -10,7 +10,8 @@
   u2 и RHmin вне пределов обрезаются до границ.
 - RHmin = ea / e°(Tmax) × 100 (решение автора 2 в docs/plan.md, модуль 2);
   ea — по ур. 19 из средней RH (как в src/et0.py).
-- Сезон культуры: по дате сева plant_doy и сумме длин стадий. Если plant_doy в данных нет
+- Сезон культуры: по дате сева plant_doy (номер дня невисокосного года, в любой год —
+  та же календарная дата) и сумме длин стадий. Если plant_doy в данных нет
   (кормовые = люцерна), сезон считается по заморозкам −4 °C (решение автора 3):
   от дня после последнего весеннего до дня перед первым осенним заморозком;
   l_mid = длина сезона − l_ini − l_dev − l_late.
@@ -30,6 +31,28 @@ KC_PARAMS = ["kc_ini", "kc_mid", "kc_end"]
 FROST_THRESHOLD_C = -4.0  # FAO-56, табл. 11, сноска 4 (люцерна)
 KC_END_ADJUST_MIN = 0.45  # ур. 65 применяется только при Kc_end(Tab) ≥ 0.45
 FROST_SPLIT_MONTH = 7  # весенние заморозки — до июля, осенние — с июля
+# plant_doy в data/crops_fao56.csv записан как номер дня невисокосного года
+# (135 = 15 мая, 74 = 15 марта). Чтобы сев был в ту же календарную дату и в
+# високосные годы, номер дня переводится в месяц и день по этому опорному году.
+SOWING_REFERENCE_YEAR = 2001
+
+
+def _whole_days(value, name):
+    """Длина в днях: целое число ≥ 0; дробное значение — ошибка, а не тихое усечение."""
+    v = float(value)
+    if not v.is_integer():
+        raise ValueError(f"{name} должно быть целым числом дней, получено {value}")
+    return int(v)
+
+
+def sowing_date(plant_doy, year):
+    """Дата сева в году year: та же календарная дата (месяц, день), что plant_doy
+    в невисокосном году. Пример: plant_doy = 135 -> 15 мая и в 2020, и в 2021 г."""
+    doy = _whole_days(plant_doy, "plant_doy")
+    if not 1 <= doy <= 365:
+        raise ValueError(f"plant_doy должен быть от 1 до 365 (невисокосный год), получено {plant_doy}")
+    ref = pd.Timestamp(SOWING_REFERENCE_YEAR, 1, 1) + pd.Timedelta(days=doy - 1)
+    return pd.Timestamp(year, ref.month, ref.day)
 
 
 # --- Кривая Kc (ур. 66) ---
@@ -40,7 +63,7 @@ def kc_curve(kc_ini, kc_mid, kc_end, l_ini, l_dev, l_mid, l_late):
     Стадия нулевой длины пропускается без деления на ноль: при l_dev = 0 Kc сразу
     переходит от Kc_ini к Kc_mid, при l_late = 0 сезон кончается на Kc_mid.
     """
-    lengths = [int(l_ini), int(l_dev), int(l_mid), int(l_late)]
+    lengths = [_whole_days(v, n) for v, n in zip((l_ini, l_dev, l_mid, l_late), STAGE_PARAMS)]
     if any(n < 0 for n in lengths):
         raise ValueError(f"Длина стадии не может быть отрицательной: {lengths}")
     total = sum(lengths)
@@ -130,8 +153,8 @@ def season_stages(params, year, tmin=None):
         missing = [p for p in STAGE_PARAMS if p not in params]
         if missing:
             raise ValueError(f"Нет длин стадий {missing}")
-        start = pd.Timestamp(year, 1, 1) + pd.Timedelta(days=int(params["plant_doy"]) - 1)
-        return start, [int(params[p]) for p in STAGE_PARAMS]
+        start = sowing_date(params["plant_doy"], year)
+        return start, [_whole_days(params[p], p) for p in STAGE_PARAMS]
 
     missing = [p for p in ["l_ini", "l_dev", "l_late"] if p not in params]
     if missing:
@@ -140,7 +163,7 @@ def season_stages(params, year, tmin=None):
         raise ValueError("Для сезона по заморозкам нужна Tmin")
     start, end = frost_season(tmin, year)
     total = (end - start).days + 1
-    l_ini, l_dev, l_late = int(params["l_ini"]), int(params["l_dev"]), int(params["l_late"])
+    l_ini, l_dev, l_late = (_whole_days(params[p], p) for p in ("l_ini", "l_dev", "l_late"))
     l_mid = total - l_ini - l_dev - l_late
     if l_mid < 0:
         raise ValueError(f"{year}: сезон {total} дн. короче суммы стадий {l_ini + l_dev + l_late} дн.")

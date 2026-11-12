@@ -138,6 +138,13 @@ def test_et0_from_climate_errors():
     assert len(et0.et0_from_climate(df, "x", 44.8, 122.27, method="hargreaves")) == 1
 
 
+def test_duplicate_climate_rows_raise():
+    # Две строки tmax на одну дату — ошибка, а не тихий выбор первого значения
+    rows = [("2020-07-01", "tmax", 30.0), ("2020-07-01", "tmax", 31.0), ("2020-07-01", "tmin", 15.0)]
+    with pytest.raises(ValueError, match="Повтор"):
+        et0.et0_from_climate(_long_climate(rows), "x", 44.8, 122.27, method="hargreaves")
+
+
 def test_et0_from_climate_rejects_wrong_units():
     # Радиация в Вт/м² вместо МДж/м²/сут или ветер без пересчёта на 2 м (другая единица) — ошибка, а не тихий расчёт
     rows = [("2020-07-01", "tmax", 35.0), ("2020-07-01", "tmin", 20.0), ("2020-07-01", "rh_mean", 30.0),

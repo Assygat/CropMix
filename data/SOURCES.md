@@ -714,3 +714,19 @@
 - quote: for 1 m s-1 £ u2 £ 6 m s-1 ... for 20% £ RHmin £ 80% ... for 0.1 m < h < 10 m ; Equation 65 is only applied when the tabulated values for Kc end exceed 0.45 ... No adjustment is made when Kc end (Table) < 0.45 ; Ex. 27: The average u2 during the mid-season near Mocha is 4.6 m/s and the RHmin during this stage averages 44% ... Taipei is about 1.3 m/s and ... RHmin ... averages 75% ... Kc mid is 1.20 for maize. The value for h from Table 12 is 2 m ... The average crop coefficient predicted during the mid-season stage is 1.07 for Taipei and 1.30 for Mocha ; Ex. 28: The crop coefficients at day 20, 40, 70 and 95 for the dry bean crop are 0.15, 0.77, 1.19 and 0.56 respectively.
 - accessed: 2026-11-12
 - note: Эталоны для tests/test_kc.py, не данные модели. Знак «£» в HTML-версии — это «≤». Формулы ур. 62/65/66 в HTML даны картинками; использованы в виде Kc = Kc(Tab) + [0.04(u2 − 2) − 0.004(RHmin − 45)](h/3)^0.3 и Kc_i = Kc_prev + [(i − ΣL_prev)/L_stage](Kc_next − Kc_prev); пример 27 и пример 28 этими формулами воспроизводятся (тесты).
+
+## S088
+- url: https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M_MAX,T2M_MIN,RH2M,WS2M,ALLSKY_SFC_SW_DWN,PRECTOTCORR&community=AG&longitude=65.5&latitude=44.8&start=20100101&end=20251231&format=CSV&time-standard=LST
+- document: NASA POWER Daily API, community AG — тот же файл, что S063: data/raw/nasa_power_daily_44.8N_65.5E_2010-2025.csv
+- location: заголовок файла (-BEGIN HEADER-), строки 4–5
+- quote: Location: latitude  44.8   longitude 65.5 ; elevation from MERRA-2: Average for 0.5 x 0.625 degree lat/lon region = 122.27 meters
+- accessed: 2026-11-12
+- note: Координаты и высота точки климата для ET0 (Ra, Rso, атмосферное давление); файл data/climate_sites.csv. Высота — средняя по ячейке MERRA-2, а не высота поля.
+
+## S089
+- url: https://www.ncei.noaa.gov/data/global-summary-of-the-day/access/2020/38062099999.csv
+- document: NOAA NCEI GSOD, станция 38062099999 «KZYL ORDA, KZ» — те же файлы, что S064; сверено по data/raw/gsod_38062099999_2020.csv
+- location: столбцы LATITUDE, LONGITUDE, ELEVATION, первая строка данных (2020-01-01)
+- quote: "STATION","DATE","LATITUDE","LONGITUDE","ELEVATION","NAME" ; "38062099999","2020-01-01","44.7666667","65.5333333","129.0","KZYL ORDA, KZ" ; readme.txt: ELEVATION - Given in meters
+- accessed: 2026-11-12
+- note: Координаты и высота станции для Hargreaves-сверки; файл data/climate_sites.csv. Единица ELEVATION — метры: https://www.ncei.noaa.gov/data/global-summary-of-the-day/doc/readme.txt, строка «ELEVATION - Given in meters» (проверено 2026-11-12).
