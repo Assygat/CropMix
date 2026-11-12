@@ -1,17 +1,18 @@
 Статусы чисел по файлам:
            table  real  assumed  simulated  total  real_pct
    climate_daily 46462        0          0  46462     100.0
+   climate_sites     6        0          0      6     100.0
       crop_areas   160        0          0    160     100.0
-     crops_fao56     0       69          0     69       0.0
+     crops_fao56     0       70          0     70       0.0
       efficiency     0        7          0      7       0.0
           prices     2        5          0      7      28.6
       rice_water     0       11          0     11       0.0
       river_flow    18        0          0     18     100.0
 water_withdrawal     8        0          0      8     100.0
           yields   264        4          0    268      98.5
-           ИТОГО 46914       96          0  47010      99.8
+           ИТОГО 46920       97          0  47017      99.8
 
-Допущения (assumed): 96
+Допущения (assumed): 97
       table           entity             param   year      value     unit                                                                                                                                                                                                                                     source
 crops_fao56             rice            kc_ini    NaN      1.050        -                                                                                                                              Литературное значение FAO-56 (S065), не измерение в Кызылординской области; применено к области как допущение
 crops_fao56             rice            kc_mid    NaN      1.200        -                                                                                                                              Литературное значение FAO-56 (S065), не измерение в Кызылординской области; применено к области как допущение
@@ -46,6 +47,7 @@ crops_fao56           fodder            kc_end    NaN      0.900        -       
 crops_fao56           fodder        max_height    NaN      0.700        m                                                                                           FAO-56 (S068); приближение: люцерна (Alfalfa Hay, averaged cutting effects) как приближение для всей группы «кормовые»; состав группы неизвестен
 crops_fao56           fodder             l_ini    NaN     10.000      day                                                                                           FAO-56 (S068); приближение: люцерна (Alfalfa Hay, averaged cutting effects) как приближение для всей группы «кормовые»; состав группы неизвестен
 crops_fao56           fodder             l_dev    NaN     30.000      day                                                                                           FAO-56 (S068); приближение: люцерна (Alfalfa Hay, averaged cutting effects) как приближение для всей группы «кормовые»; состав группы неизвестен
+crops_fao56           fodder            l_late    NaN     30.000      day             Решение автора 2026-11-12 (docs/plan.md, модуль 2, решение 3): последние 30 дней сезона по заморозкам Kc снижается от Kc_mid 0.95 до Kc_end 0.90; длина не из FAO-56 табл. 11 (там для люцерны только total season), допущение
 crops_fao56  vegetables_open            kc_ini    NaN      0.600        -                                                                                                        FAO-56 (S069); приближение: томат / группа Solanaceae как приближение для группы «овощи открытого грунта»; состав группы неизвестен
 crops_fao56  vegetables_open            kc_mid    NaN      1.150        -                                                                                                        FAO-56 (S069); приближение: томат / группа Solanaceae как приближение для группы «овощи открытого грунта»; состав группы неизвестен
 crops_fao56  vegetables_open            kc_end    NaN      0.800        -                                                                             Середина диапазона FAO-56 0.7–0.9 (S069); приближение: томат / группа Solanaceae как приближение для группы «овощи открытого грунта»; состав группы неизвестен
