@@ -706,3 +706,11 @@
 - quote: TABLE 2.4. Slope of vapour pressure curve (D) for different temperatures (T) (Eq. 13) ... 20.0 | 0.145
 - accessed: 2026-11-12
 - note: Эталон для теста ур. 13 в tests/test_et0.py (Δ в кПа/°C).
+
+## S087
+- url: https://www.fao.org/4/x0490e/x0490e0b.htm
+- document: Allen R.G., Pereira L.S., Raes D., Smith M. (1998). FAO Irrigation and Drainage Paper 56, Chapter 6 — ETc, single crop coefficient; сырой файл: data/raw/fao56_chapter6_x0490e0b.htm
+- location: текст к ур. 62 и ур. 65 (пределы u2, RHmin, h; правило Kc_end ≥ 0.45); Example 27; Example 28
+- quote: for 1 m s-1 £ u2 £ 6 m s-1 ... for 20% £ RHmin £ 80% ... for 0.1 m < h < 10 m ; Equation 65 is only applied when the tabulated values for Kc end exceed 0.45 ... No adjustment is made when Kc end (Table) < 0.45 ; Ex. 27: The average u2 during the mid-season near Mocha is 4.6 m/s and the RHmin during this stage averages 44% ... Taipei is about 1.3 m/s and ... RHmin ... averages 75% ... Kc mid is 1.20 for maize. The value for h from Table 12 is 2 m ... The average crop coefficient predicted during the mid-season stage is 1.07 for Taipei and 1.30 for Mocha ; Ex. 28: The crop coefficients at day 20, 40, 70 and 95 for the dry bean crop are 0.15, 0.77, 1.19 and 0.56 respectively.
+- accessed: 2026-11-12
+- note: Эталоны для tests/test_kc.py, не данные модели. Знак «£» в HTML-версии — это «≤». Формулы ур. 62/65/66 в HTML даны картинками; использованы в виде Kc = Kc(Tab) + [0.04(u2 − 2) − 0.004(RHmin − 45)](h/3)^0.3 и Kc_i = Kc_prev + [(i − ΣL_prev)/L_stage](Kc_next − Kc_prev); пример 27 и пример 28 этими формулами воспроизводятся (тесты).
