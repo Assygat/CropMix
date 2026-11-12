@@ -730,3 +730,11 @@
 - quote: "STATION","DATE","LATITUDE","LONGITUDE","ELEVATION","NAME" ; "38062099999","2020-01-01","44.7666667","65.5333333","129.0","KZYL ORDA, KZ" ; readme.txt: ELEVATION - Given in meters
 - accessed: 2026-11-12
 - note: Координаты и высота станции для Hargreaves-сверки; файл data/climate_sites.csv. Единица ELEVATION — метры: https://www.ncei.noaa.gov/data/global-summary-of-the-day/doc/readme.txt, строка «ELEVATION - Given in meters» (проверено 2026-11-12).
+
+## S090
+- url: https://servicio.mapa.gob.es/siarweb/documentos/masInfo/Precipitación-Efectiva.pdf
+- document: SIAR (Sistema de Información Agroclimática para el Regadío), Ministerio de Agricultura, Pesca y Alimentación de España. «Cálculo de la precipitación efectiva», 2025; сырой файл: data/raw/siar_mapa_precipitacion_efectiva.pdf
+- location: стр. 1–2, раздел «Métodos», пункт «USDA SCS (P)»; список литературы [FAO92]
+- quote: USDA SCS (P) Pe = Pt (125 - 0.2 Pt / 125) para Pt < 250 mm Pe = 125 + 0.1 Pt para Pt > 250 mm ; [FAO92] Cropwat. Programa de ordenador para planificar y manejar el riego. FAO. Estudios Riegos y Drenajes nº 46. Pág. 23, 24
+- accessed: 2026-11-12
+- note: **Вторичный источник.** Первоисточник (FAO Irrigation and Drainage Paper 46, CROPWAT, Smith 1992, с. 23–24) открыть не удалось (архив недоступен). Pt и Pe — месячные суммы, мм. В цитате скобка стоит не на месте: буквально Pt·(125 − 0.2·Pt/125) при Pt = 250 мм дало бы 31 150 мм; используется Pt·(125 − 0.2·Pt)/125 — только эта запись непрерывна с второй ветвью (обе дают 150 мм при Pt = 250 мм). Формула — метод (константы метода в коде src/layer1_losses.py), не данные области.
