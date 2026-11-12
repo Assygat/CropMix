@@ -682,3 +682,27 @@
 - quote: По данным [5], в условиях Северного Кавказа и юга Украины при урожайности риса 3-5 т/га расход воды на водопотребление колеблется в пределах от 6,5 до 10 тыс. м3/га, а районах Средней Азии и низовьях Волги - 10-11 тыс. м3/га. ; Все это позволит снизить норму водопотребления в зависимости от почвенно-гидрогеологических и климатических условий до 20-22 тыс.м3/га вместо существующей 27,4-38,9 тыс.м3/га и более.
 - accessed: 2026-11-12
 - note: Литературный обзор по разным районам рисосеяния (не только Кызылорда). Во второй цитате «норма водопотребления» по контексту абзаца — объём воды, подаваемый на поле; в данных записано как rice_field_supply. Год сборника на странице не установлен. Значение 10–11 тыс. м³/га — вторичная ссылка: Набиев приводит его «по данным [5]» = Тулякова З.Ф. «Рис на засоленных землях», М.: Колос, 1978 (первоисточник не открывали). Цитаты сверены с текстом PDF 2026-11-12.
+
+## S084
+- url: https://www.fao.org/4/x0490e/x0490e07.htm
+- document: Allen R.G., Pereira L.S., Raes D., Smith M. (1998). FAO Irrigation and Drainage Paper 56, Chapter 3 — Meteorological data; сырой файл: data/raw/fao56_chapter3_x0490e07.htm
+- location: Example 2, Example 3, Example 5, Example 8, Example 9, Example 10, Example 14
+- quote: Ex. 2: P = 101.3 [(293 - (0.0065) 1800)/293]5.26 = 81.8 kPa ; g = 0.665 10-3 (81.8) = 0.054 kPa °C-1 ; Ex. 3: e°(Tmax) = 0.6108 exp[17.27(24.5)/(24.5 + 237.3)] 3.075 kPa ; e°(Tmin) = 0.6108 exp[17.27(15)/(15 + 237.3)] 1.705 kPa ; es = (3.075 + 1.705)/2 2.39 kPa ; Ex. 5: Tmin = 18°C and RHmax = 82% Tmax = 25°C and RHmin = 54% ... ea = [2.064 (82/100) + 3.168 (54/100)] = 1.70 kPa Note that when using Eq. 19: ea = 1.78 kPa ; Ex. 8: Determine the extraterrestrial radiation (Ra) for 3 September at 20°S ... J = 246 ... Ra = ... = 32.2 MJ m-2 d-1 ; Ex. 9: N= 24/p (1.527) = 11.7 hour ; Ex. 10: In Rio de Janeiro (Brazil) at a latitude of 22°54'S ... for 15 May, the day in the year (J) = 135 ... Ra = 25.1 MJ m-2 day-1 ... N = 10.9 hours day-1 n = 220 hours/31 days = 7.1 hours day-1 ... Rs = ... 0.58 (25.1) = 14.5 MJ m-2 day-1 ; Ex. 14: uz = 3.2 m/s And: z = 10 m ... u2 = 3.2 (0.75) = 2.4 m/s
+- accessed: 2026-11-12
+- note: Эталонные значения для тестов tests/test_et0.py, а не данные модели. В Ex. 5 в тексте формулы ур. 17 пропущено деление на 2; результат 1.70 kPa соответствует ур. 17 с делением на 2. Символы Δ и γ в HTML-версии переданы как «D» и «g».
+
+## S085
+- url: https://www.fao.org/4/x0490e/x0490e08.htm
+- document: Allen R.G., Pereira L.S., Raes D., Smith M. (1998). FAO Irrigation and Drainage Paper 56, Chapter 4 — Determination of ETo; сырой файл: data/raw/fao56_chapter4_x0490e08.htm
+- location: Example 18. Determination of ETo with daily data
+- quote: Given the meteorological data as measured on 6 July in Uccle (Brussels, Belgium) located at 50°48'N and at 100 m above sea level: Maximum air temperature (Tmax) = 21.5 °C ; Minimum air temperature (Tmin) = 12.3 °C ; Maximum relative humidity (RHmax) = 84 % ; Minimum relative humidity (RHmin) = 63 % ; Wind speed measured at 10 m height = 10 km/h ; Actual hours of sunshine (n) = 9.25 hours ... u2 = 0.748 (2.78) = 2,078 m/s ... ea = [1.431 (0.84) + 2.564 (0.63)]/2 = 1.409 kPa ... J = 187 ... Ra = 41.09 MJ m-2 day-1 ... N = 16.1 ... Rs = [0.25 + 0.50 (0.57)] 41.09 22.07 MJ m-2 day-1 ... Rnl = 34.76(0.17)0.61 = 3.71 MJ m-2 day-1 ... ETo (Eq. 6) = 2.81 + 1.07 = 3.88 » 3.9 mm/day
+- accessed: 2026-11-12
+- note: Эталон для главного теста ET0 (критерий модуля 2). В тексте источника опечатка «n/N = 9.25/16.3» при N = 16.1; на результат не влияет (0.57 в обоих случаях). «2,078» — десятичная запятая (2.078 м/с).
+
+## S086
+- url: https://www.fao.org/4/x0490e/x0490e0j.htm
+- document: Allen R.G., Pereira L.S., Raes D., Smith M. (1998). FAO Irrigation and Drainage Paper 56, Annex 2 — Meteorological tables; сырой файл: data/raw/fao56_annex2_x0490e0j.htm
+- location: TABLE 2.4. Slope of vapour pressure curve (D) for different temperatures (T), строка T = 20.0 °C
+- quote: TABLE 2.4. Slope of vapour pressure curve (D) for different temperatures (T) (Eq. 13) ... 20.0 | 0.145
+- accessed: 2026-11-12
+- note: Эталон для теста ур. 13 в tests/test_et0.py (Δ в кПа/°C).
