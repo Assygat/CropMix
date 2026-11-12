@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CropMix Twin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <h1>CropMix Twin</h1>
+    <p class="subtitle">Модель планирования: как структура посевов Кызылординской области меняет потребность в воде.
+      Это расчёт по модели, а не измерение на поле.</p>
+    <div id="data-banner" class="banner"></div>
+  </header>
+
+  <main>
+    <section class="card controls" aria-label="Параметры расчёта">
+      <h2>Параметры</h2>
+      <div class="grid">
+        <label>Климат года
+          <select id="climate-year"></select>
+        </label>
+        <label>Площади как в году
+          <select id="area-year"></select>
+        </label>
+        <label>КПД полива на поле <span class="badge assumed">assumed</span>
+          <select id="eff-field"></select>
+        </label>
+        <label>КПД каналов <span class="badge assumed">assumed</span>
+          <select id="eff-canal"></select>
+        </label>
+        <label>Перколяция на рисовых чеках <span class="badge assumed">assumed</span>
+          <select id="rice-perc"></select>
+        </label>
+      </div>
+      <p class="hint">Коэффициенты (м³/га) для каждого сценария посчитаны в Python
+        (<code>python -m src.run_all</code>); страница только умножает их на площади.</p>
+    </section>
+
+    <section class="card total" aria-label="Сумма по области">
+      <h2>Сумма по области — модельная потребность в воде</h2>
+      <div class="kpis">
+        <div class="kpi"><span class="kpi-label">У растения</span><span id="t-plant" class="kpi-value"></span></div>
+        <div class="kpi"><span class="kpi-label">На поле</span><span id="t-field" class="kpi-value"></span></div>
+        <div class="kpi river"><span class="kpi-label">Из реки (расчётная потребность)</span><span id="t-river" class="kpi-value"></span></div>
+      </div>
+      <p id="t-area" class="hint"></p>
+      <div id="warning" class="warning" role="alert"></div>
+    </section>
+
+    <section class="card" aria-label="Площади культур">
+      <h2>Площади культур, га</h2>
+      <div id="sliders" class="sliders"></div>
+    </section>
+
+    <section class="card" aria-label="График">
+      <h2>Вода по культурам, млн м³</h2>
+      <div class="chart-box"><canvas id="chart" aria-label="Столбчатый график воды по культурам"></canvas></div>
+      <p id="chart-fallback" class="hint" hidden>График не загрузился (нет интернета для Chart.js); числа — в таблице ниже.</p>
+    </section>
+
+    <section class="card" aria-label="Таблица">
+      <h2>По культурам</h2>
+      <div class="table-wrap"><table id="table"></table></div>
+    </section>
+
+    <section class="card income" aria-label="Доход">
+      <h2>Доход</h2>
+      <p id="income"></p>
+    </section>
+
+    <section class="card" aria-label="Ограничения">
+      <h2>Ограничения модели</h2>
+      <ul id="limitations"></ul>
+      <p class="hint">Подробно: <code>docs/limitations.md</code>; источники: <code>data/SOURCES.md</code>.</p>
+    </section>
+  </main>
+
+  <footer id="footer" class="hint"></footer>
+
+  <script src="data/model.js"></script>
+  <script src="model_calc.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
