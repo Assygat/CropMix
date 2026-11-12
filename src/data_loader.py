@@ -65,6 +65,12 @@ PARAMS = {
     "eff_canal": ("fraction", 0.1, 1.0),
     "water_withdrawal": ("m3", 0, 50_000_000_000),
     "irrigated_area": ("ha", 0, 2_000_000),
+    # Рис: дополнительная вода сверх ETc (FAO Training Manual No. 3) и литературные нормы
+    "rice_saturation": ("mm", 0, 1000),
+    "rice_water_layer": ("mm", 0, 500),
+    "rice_percolation": ("mm/day", 0, 30),
+    "rice_seasonal_et": ("m3/ha", 0, 30_000),
+    "rice_field_supply": ("m3/ha", 0, 60_000),
     "river_flow": ("m3", 0, 100_000_000_000),
 }
 
