@@ -28,9 +28,10 @@ def main() -> int:
     c = model["comparison"]
     print(f"\nЗаписано: {path} и outputs/ ({', '.join(f + '.csv' for f in frames)})")
     print(f"Культур: {len(model['crops'])}, лет: {len(model['years'])}, сценариев: {len(model['coef_m3_ha'])}")
-    print("Модель «из реки» / официальный лимит или план того же года (НЕ калибровка): "
+    print("Обозначения: W(A<год площадей>, C<год климата | mean>, E<сценарий КПД>) — модельный забор «из реки».")
+    print("W(A_y, C_y, E_base) / официальный лимит или план года y (НЕ калибровка): "
           f"база {c['ratio_base'][0]:.2f}–{c['ratio_base'][1]:.2f}, "
-          f"все сценарии {c['ratio_all_scenarios'][0]:.2f}–{c['ratio_all_scenarios'][1]:.2f}")
+          f"все сценарии E {c['ratio_all_scenarios'][0]:.2f}–{c['ratio_all_scenarios'][1]:.2f}")
 
     # Слой 2: классы водности и лимиты (модуль 5)
     years, scenarios = build_scenarios(tables["river_flow"], tables["water_withdrawal"])
@@ -40,14 +41,12 @@ def main() -> int:
     print(years[["year", "runoff_m3", "water_class"]].to_string(index=False))
     print(scenarios[["water_class", "years", "limit_m3", "limit_year", "limit_status", "climate_key"]]
           .to_string(index=False))
-    # Справка, не калибровка: модельная потребность «из реки» при среднем климате, базовых КПД
-    # и площадях года лимита против самого лимита.
+    # Справка, не калибровка. Правило: историческое сравнение — площади и климат того же года, W(A_y, C_y, E_base).
     for r in scenarios.dropna(subset=["limit_m3"]).itertuples():
         y = str(int(r.limit_year))
-        tot = regional_totals(model["coef_m3_ha"]["base|base|base"][r.climate_key], model["areas_ha"][y])
-        print(f"  {r.water_class}: потребность (климат {r.climate_key}, площади {y}) "
-              f"{tot['river_m3'] / 1e9:.2f} км³ против лимита {r.limit_m3 / 1e9:.2f} км³ "
-              f"(×{tot['river_m3'] / r.limit_m3:.2f})")
+        tot = regional_totals(model["coef_m3_ha"]["base|base|base"][y], model["areas_ha"][y])
+        print(f"  {r.water_class}: W(A{y}, C{y}, E_base) = {tot['river_m3'] / 1e9:.2f} км³ "
+              f"против лимита {y} г. {r.limit_m3 / 1e9:.2f} км³ (×{tot['river_m3'] / r.limit_m3:.2f})")
 
     # Слой 3: оптимизатор, цель — минимум воды «из реки» (модуль 6)
     crops = [c["id"] for c in model["crops"]]
@@ -60,12 +59,25 @@ def main() -> int:
                                               opt.food_crops(presets_df, crops), opt.load_targets(presets_df), abs_limit)
     structures.to_csv(OUTPUTS_DIR / "optimizer_structures.csv", index=False, encoding="utf-8")
     feasibility.to_csv(OUTPUTS_DIR / "optimizer_feasibility.csv", index=False, encoding="utf-8")
-    print(f"\nСлой 3 — минимум воды «из реки» (площади {BASE_AREA_YEAR}, базовые КПД, средний климат; модель, не факт):")
+    print(f"\nСлой 3 — минимум воды «из реки»; планировочная база W(A{BASE_AREA_YEAR}, Cmean, E_base); "
+          "общая площадь = площади базового года (модель, не факт):")
     best = feasibility.drop_duplicates("preset")[["preset", "base_m3", "min_achievable_m3", "saving_pct_max"]]
     for r in best.itertuples():
         print(f"  {r.preset:9s} база {r.base_m3 / 1e9:.2f} км³ -> минимум {r.min_achievable_m3 / 1e9:.2f} км³ "
               f"(−{r.saving_pct_max:.1f} %)")
     print(feasibility[["preset", "limit_kind", "limit_id", "feasible"]].to_string(index=False))
+
+    # Экспериментальные сценарии сокращения общей площади — отдельно от основных предустановок
+    exps = opt.run_area_experiments(coef, base, opt.load_presets(presets_df), opt.food_crops(presets_df, crops),
+                                    opt.load_area_experiments(presets_df))
+    exps.to_csv(OUTPUTS_DIR / "optimizer_area_experiments.csv", index=False, encoding="utf-8")
+    print("\nЭКСПЕРИМЕНТАЛЬНЫЕ сценарии (не предустановки): общая площадь сокращена; экономия = структура + площадь")
+    for r in exps.itertuples():
+        if r.feasible:
+            print(f"  {r.preset:9s} −{r.area_reduction:.0%} площади: −{r.saving_total_pct:.1f} % "
+                  f"(структура {r.saving_structure_pct:.1f} + площадь {r.saving_area_pct:.1f})")
+        else:
+            print(f"  {r.preset:9s} −{r.area_reduction:.0%} площади: решения нет — {r.message}")
     return 0
 
 

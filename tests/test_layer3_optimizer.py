@@ -6,7 +6,7 @@ from src import layer3_optimizer as opt
 
 
 def P(d, f=0.0, a=1.0):
-    return {"area_change_max": d, "food_area_min_share": f, "total_area_min_share": a}
+    return {"area_change_max": d, "food_area_min_share": f, "total_area_share": a}
 
 
 def test_two_crops_hand_solution():
@@ -49,7 +49,8 @@ def test_limit_feasible_and_infeasible():
 def test_contradictory_preset_is_reported():
     # Минимум продовольственных 160 % при коридоре ±50 % невыполним даже без лимита воды
     r = opt.optimize({"A": 10000, "B": 4000}, {"A": 100, "B": 100}, P(0.5, f=1.6), food={"A"})
-    assert r.status == "infeasible" and "противоречат" in r.message
+    assert r.status == "infeasible" and "Решения нет даже без лимита" in r.message
+    assert "минимум продовольственных 160 га больше их верхних границ 150 га" in r.message
 
 
 def test_units_and_total_area_preserved():
@@ -108,3 +109,53 @@ def test_real_presets_feasible_and_consistent(real):
         assert r.water_m3 <= r.base_water_m3 + 1e-6
         savings[pid] = r.saving_pct
     assert savings["tight"] <= savings["moderate"] <= savings["flexible"]
+
+
+# --- Явное равенство общей площади и экспериментальные сценарии ---
+
+def test_total_area_is_equality_not_floor():
+    # Цель «минимум воды» тянет площадь вниз; при ограничении только снизу (≥) решение могло бы
+    # лечь на нижнюю границу, при равенстве общая площадь ровно равна базовой (250 га).
+    coef, base = {"A": 10000, "B": 4000, "C": 7000}, {"A": 100, "B": 100, "C": 50}
+    res = opt.optimize(coef, base, P(0.5), set())
+    assert sum(res.areas.values()) == pytest.approx(250.0, abs=1e-9)
+    assert "total area = 100% of current" in res.active
+
+
+def test_area_experiment_hand_split():
+    # Сокращение площади на 10 %: Σx = 180. A (10 000) на нижней границе 50, B (4 000) = 130.
+    # Вода 50·10 000 + 130·4 000 = 1 020 000 м³; база 1 400 000.
+    # Структура (при Σx = 200): 1 100 000 -> 21.43 %; площадь: (1 100 000 − 1 020 000)/1 400 000 = 5.71 %.
+    df = opt.run_area_experiments({"A": 10000, "B": 4000}, {"A": 100, "B": 100}, {"p": P(0.5)}, set(), {"a10": 0.10})
+    row = df.iloc[0]
+    assert row.feasible and row.scenario_type == "experimental"
+    assert row.total_ha == pytest.approx(180)
+    assert row.water_m3 == pytest.approx(1.02e6)
+    assert row.saving_structure_pct == pytest.approx(300000 / 1.4e6 * 100)
+    assert row.saving_area_pct == pytest.approx(80000 / 1.4e6 * 100)
+    assert row.saving_total_pct == pytest.approx(row.saving_structure_pct + row.saving_area_pct)
+
+
+def test_area_experiment_infeasible_is_explained():
+    # A — продовольственная, минимум 95 %, коридор ±15 %, сокращение площади на 15 % -> Σx = 170:
+    # A ≥ 95, B ≥ 85 -> 180 га > 170 га — решения нет, причина названа.
+    r = opt.optimize({"A": 10000, "B": 4000}, {"A": 100, "B": 100}, P(0.15, f=0.95), {"A"}, total_share=0.85)
+    assert r.status == "infeasible"
+    assert "минимум продовольственных" in r.message and "180" in r.message and "170" in r.message
+
+
+def test_real_area_experiments(real):
+    coef, base, presets, food, targets = real
+    from src.data_loader import load_all
+    exps = opt.load_area_experiments(load_all()["optimizer_presets"])
+    assert exps == {"a05": 0.05, "a10": 0.10, "a15": 0.15}
+    df = opt.run_area_experiments(coef, base, presets, food, exps)
+    assert set(df["scenario_type"]) == {"experimental"} and len(df) == 9
+    bad = df[~df["feasible"]]
+    assert set(zip(bad["preset"], bad["experiment"])) == {("tight", "a10"), ("tight", "a15")}
+    assert all("минимум продовольственных" in m for m in bad["message"])
+    ok = df[df["feasible"]]
+    for r in ok.itertuples():
+        assert r.total_ha == pytest.approx((1 - r.area_reduction) * r.base_ha, rel=1e-9)
+        assert r.saving_total_pct == pytest.approx(r.saving_structure_pct + r.saving_area_pct)
+        assert r.saving_area_pct > 0

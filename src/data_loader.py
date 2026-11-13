@@ -79,7 +79,8 @@ PARAMS = {
     # Оптимизатор (модуль 6): параметры сценариев политики, все assumed
     "area_change_max": ("fraction", 0, 1),
     "food_area_min_share": ("fraction", 0, 1),
-    "total_area_min_share": ("fraction", 0, 1),
+    "total_area_share": ("fraction", 0, 1),
+    "total_area_reduction": ("fraction", 0, 0.5),
     "water_reduction_target": ("fraction", 0, 0.9),
     "food_crop": ("-", 0, 1),
 }

@@ -12,7 +12,11 @@
 3. Ограничения — предустановки из data/optimizer_presets.csv (все assumed):
    - коридор: x0·(1 − d) ≤ x ≤ x0·(1 + d) для каждой культуры;
    - продовольственные культуры: Σ x_food ≥ f · Σ x0_food;
-   - общая площадь: a · Σ x0 ≤ Σ x ≤ Σ x0 (a = 1: та же земля, другая структура).
+   - общая площадь — РАВЕНСТВО: Σ x = s · Σ x0 (основные предустановки: s = 1,
+     «та же земля, другая структура»; подтверждено автором).
+4. Экспериментальные сценарии (отдельно от предустановок): та же постановка, но
+   s = 1 − (0.05 | 0.10 | 0.15). Экономия делится на «структуру» (оптимум при s = 1)
+   и «площадь» (дополнительное снижение при меньшей s).
 
 Переменные — площади культур, га; коэффициенты — м³/га «из реки» из слоя 1; вода — м³.
 """
@@ -23,7 +27,7 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import linprog
 
-PRESET_PARAMS = ["area_change_max", "food_area_min_share", "total_area_min_share"]
+PRESET_PARAMS = ["area_change_max", "food_area_min_share", "total_area_share"]
 TOL = 1e-6  # относительный допуск для «активного» ограничения
 
 
@@ -36,6 +40,7 @@ class OptResult:
     base_water_m3: float = float("nan")
     limit_m3: float | None = None
     min_achievable_m3: float = float("nan")          # минимум без лимита при тех же ограничениях
+    total_share: float = 1.0                         # Σx / Σx0
     active: list = field(default_factory=list)       # активные ограничения (названия)
 
     @property
@@ -50,7 +55,7 @@ class OptResult:
 # --- Данные ---
 
 def load_presets(presets_df):
-    """{preset_id: {area_change_max, food_area_min_share, total_area_min_share}} из optimizer_presets.csv."""
+    """{preset_id: {area_change_max, food_area_min_share, total_area_share}} из optimizer_presets.csv."""
     sub = presets_df[(presets_df["entity"] == "preset") & presets_df["param"].isin(PRESET_PARAMS)]
     out = {}
     for (m, p), v in sub.groupby(["measure", "param"])["value"]:
@@ -67,6 +72,12 @@ def load_presets(presets_df):
 def load_targets(presets_df):
     """{target_id: r} — относительные цели снижения забора из реки."""
     sub = presets_df[presets_df["param"] == "water_reduction_target"]
+    return dict(zip(sub["measure"], sub["value"].astype(float)))
+
+
+def load_area_experiments(presets_df):
+    """{experiment_id: доля сокращения общей площади} — экспериментальные сценарии (не предустановки)."""
+    sub = presets_df[(presets_df["entity"] == "experiment") & (presets_df["param"] == "total_area_reduction")]
     return dict(zip(sub["measure"], sub["value"].astype(float)))
 
 
@@ -106,45 +117,68 @@ def _build(coef, base, preset, food):
     x0 = np.array([base[k] for k in crops], dtype=float)
     if (c < 0).any() or (x0 < 0).any():
         raise ValueError("Коэффициенты и площади должны быть неотрицательными")
-    d, f, a = preset["area_change_max"], preset["food_area_min_share"], preset["total_area_min_share"]
+    d, f = preset["area_change_max"], preset["food_area_min_share"]
     bounds = [(xi * (1 - d), xi * (1 + d)) for xi in x0]
     is_food = np.array([1.0 if k in food else 0.0 for k in crops])
-    A, b, names = [], [], []
-    A.append(np.ones(len(crops))); b.append(x0.sum()); names.append("total area ≤ current")
-    A.append(-np.ones(len(crops))); b.append(-a * x0.sum()); names.append("total area ≥ share of current")
-    if is_food.any():
-        A.append(-is_food); b.append(-f * (is_food * x0).sum()); names.append("food crops ≥ share of current")
-    return crops, c, x0, bounds, A, b, names
+    return crops, c, x0, bounds, is_food, f
 
 
-def optimize(coef, base, preset, food, limit_m3=None):
-    """Минимум воды «из реки» при ограничениях предустановки и (необязательно) лимите воды, м³.
+def explain_infeasible(base, preset, food, total_share):
+    """Почему при заданной общей площади решения нет: какие ограничения несовместимы (с числами, га)."""
+    d, f = preset["area_change_max"], preset["food_area_min_share"]
+    target = total_share * sum(base.values())
+    lo = {k: v * (1 - d) for k, v in base.items()}
+    hi = {k: v * (1 + d) for k, v in base.items()}
+    food_min = f * sum(base[k] for k in food)
+    food_hi = sum(hi[k] for k in food)
+    nonfood_lo = sum(lo[k] for k in base if k not in food)
+    reasons = []
+    if sum(lo.values()) > target:
+        reasons.append(f"нижние границы коридора ±{d:.0%} в сумме {sum(lo.values()):,.0f} га больше заданной площади {target:,.0f} га")
+    if food_min + nonfood_lo > target:
+        reasons.append(f"минимум продовольственных ({f:.0%}: {food_min:,.0f} га) плюс нижние границы остальных культур "
+                       f"({nonfood_lo:,.0f} га) = {food_min + nonfood_lo:,.0f} га больше заданной площади {target:,.0f} га")
+    if sum(hi.values()) < target:
+        reasons.append(f"верхние границы коридора в сумме {sum(hi.values()):,.0f} га меньше заданной площади {target:,.0f} га")
+    if food_min > food_hi:
+        reasons.append(f"минимум продовольственных {food_min:,.0f} га больше их верхних границ {food_hi:,.0f} га")
+    return "; ".join(reasons) if reasons else "ограничения несовместимы (причина не определена простыми проверками)"
 
-    coef: {культура: м³/га}; base: {культура: га} — текущая структура; food: множество культур.
+
+def optimize(coef, base, preset, food, limit_m3=None, total_share=None):
+    """Минимум воды «из реки» при Σx = s·Σx0, коридоре, минимуме продовольственных и (необязательно) лимите, м³.
+
+    coef: {культура: м³/га}; base: {культура: га} — текущая структура; food: множество культур;
+    total_share: s (по умолчанию preset["total_area_share"]; основные предустановки — 1.0).
     """
-    crops, c, x0, bounds, A, b, names = _build(coef, base, preset, food)
+    s_share = preset["total_area_share"] if total_share is None else total_share
+    crops, c, x0, bounds, is_food, f = _build(coef, base, preset, food)
     base_water = float(c @ x0)
+    A_ub, b_ub, ub_names = [], [], []
+    if is_food.any():
+        A_ub.append(-is_food); b_ub.append(-f * float(is_food @ x0)); ub_names.append("food crops ≥ share of current")
+    A_eq, b_eq = [np.ones(len(crops))], [s_share * float(x0.sum())]
 
     # Минимум без лимита — он же оптимум при любом достижимом лимите (цель — минимум воды)
-    free = linprog(c, A_ub=np.array(A), b_ub=np.array(b), bounds=bounds, method="highs")
+    free = linprog(c, A_ub=np.array(A_ub) if A_ub else None, b_ub=np.array(b_ub) if b_ub else None,
+                   A_eq=np.array(A_eq), b_eq=np.array(b_eq), bounds=bounds, method="highs")
     if free.status != 0:
-        return OptResult("infeasible", "Ограничения предустановки противоречат друг другу: "
-                         "решения нет даже без лимита воды (" + free.message + ")",
-                         base_water_m3=base_water, limit_m3=limit_m3)
+        return OptResult("infeasible", "Решения нет даже без лимита воды: " + explain_infeasible(base, preset, food, s_share),
+                         base_water_m3=base_water, limit_m3=limit_m3, total_share=s_share)
     min_water = float(free.fun)
     if limit_m3 is not None and min_water > limit_m3 * (1 + TOL):
         return OptResult("infeasible",
                          f"Лимит {limit_m3 / 1e9:.2f} км³ недостижим при этих ограничениях: "
                          f"минимум {min_water / 1e9:.2f} км³ (не хватает {(min_water - limit_m3) / 1e9:.2f} км³)",
-                         base_water_m3=base_water, limit_m3=limit_m3, min_achievable_m3=min_water)
+                         base_water_m3=base_water, limit_m3=limit_m3, min_achievable_m3=min_water, total_share=s_share)
 
     x = free.x
-    active = []
-    slack = np.array(b) - np.array(A) @ x
-    scale = max(1.0, x0.sum())
-    for name, s in zip(names, slack):
-        if s <= TOL * scale:
-            active.append(name)
+    active = [f"total area = {s_share:.0%} of current"]
+    if A_ub:
+        slack = np.array(b_ub) - np.array(A_ub) @ x
+        for name, sl in zip(ub_names, slack):
+            if sl <= TOL * max(1.0, x0.sum()):
+                active.append(name)
     for k, xi, (lo, hi) in zip(crops, x, bounds):
         if abs(xi - lo) <= TOL * max(1.0, lo):
             active.append(f"{k} at lower bound")
@@ -154,13 +188,14 @@ def optimize(coef, base, preset, food, limit_m3=None):
         active.append("water limit")
     msg = "Оптимум найден" + ("" if limit_m3 is None else f"; лимит {limit_m3 / 1e9:.2f} км³ выполнен")
     return OptResult("optimal", msg, areas=dict(zip(crops, map(float, x))), water_m3=min_water,
-                     base_water_m3=base_water, limit_m3=limit_m3, min_achievable_m3=min_water, active=active)
+                     base_water_m3=base_water, limit_m3=limit_m3, min_achievable_m3=min_water,
+                     total_share=s_share, active=active)
 
 
-# --- Сводка для run_all ---
+# --- Сводки для run_all ---
 
 def run_presets(coef, base, presets, food, targets, absolute_limit_m3=None):
-    """Результаты по всем предустановкам: оптимальная структура и выполнимость лимитов.
+    """Основные предустановки (общая площадь = площади базового года): структура и выполнимость лимитов.
 
     Возвращает (structures, feasibility) — два DataFrame.
     """
@@ -185,3 +220,28 @@ def run_presets(coef, base, presets, food, targets, absolute_limit_m3=None):
                          "feasible": rr.status == "optimal", "min_achievable_m3": r.water_m3,
                          "base_m3": r.base_water_m3, "saving_pct_max": r.saving_pct, "message": rr.message})
     return pd.DataFrame(rows), pd.DataFrame(feas)
+
+
+def run_area_experiments(coef, base, presets, food, reductions):
+    """Экспериментальные сценарии сокращения общей площади (отдельно от основных предустановок).
+
+    Для каждой предустановки и доли сокращения r: Σx = (1 − r)·Σx0. Экономия от базы делится на
+    структуру (оптимум при Σx = Σx0) и площадь (дополнительное снижение при Σx = (1 − r)·Σx0).
+    """
+    rows = []
+    for pid, preset in presets.items():
+        ref = optimize(coef, base, preset, food, total_share=1.0)
+        struct_pct = ref.saving_pct if ref.status == "optimal" else float("nan")
+        for eid, red in sorted(reductions.items(), key=lambda kv: kv[1]):
+            r = optimize(coef, base, preset, food, total_share=1.0 - red)
+            ok = r.status == "optimal"
+            rows.append({
+                "scenario_type": "experimental", "preset": pid, "experiment": eid, "area_reduction": red,
+                "feasible": ok, "total_ha": sum(r.areas.values()) if ok else None, "base_ha": sum(base.values()),
+                "water_m3": r.water_m3 if ok else None, "base_m3": r.base_water_m3,
+                "saving_total_pct": r.saving_pct if ok else None,
+                "saving_structure_pct": struct_pct if ok else None,
+                "saving_area_pct": (r.saving_pct - struct_pct) if ok else None,
+                "message": r.message,
+            })
+    return pd.DataFrame(rows)
