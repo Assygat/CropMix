@@ -76,6 +76,12 @@ PARAMS = {
     "rice_seasonal_et": ("m3/ha", 0, 30_000),
     "rice_field_supply": ("m3/ha", 0, 60_000),
     "river_flow": ("m3", 0, 100_000_000_000),
+    # Оптимизатор (модуль 6): параметры сценариев политики, все assumed
+    "area_change_max": ("fraction", 0, 1),
+    "food_area_min_share": ("fraction", 0, 1),
+    "total_area_min_share": ("fraction", 0, 1),
+    "water_reduction_target": ("fraction", 0, 0.9),
+    "food_crop": ("-", 0, 1),
 }
 
 
