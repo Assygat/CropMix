@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>CropMix Twin — Every Drop Matters</title>
+  <meta name="description" content="CropMix Twin: a scientific planning model of agricultural water use in Kyzylorda Region, Kazakhstan. Visual prototype of the homepage hero.">
+  <meta name="theme-color" content="#061522">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <!-- Illustrative procedural landscape (decorative, not data) -->
+    <div class="scene" aria-hidden="true">
+      <div class="terrain-wrap"><canvas id="terrain"></canvas></div>
+      <div class="atmos atmos-sky"></div>
+      <div class="atmos atmos-haze"></div>
+      <div class="atmos atmos-scrim"></div>
+      <div class="grain"></div>
+    </div>
+
+    <header class="nav-wrap">
+      <nav class="nav glass" aria-label="Primary">
+        <a class="brand" href="#top" aria-label="CropMix Twin home">
+          <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+            <defs>
+              <linearGradient id="bm" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#36B9D6"/><stop offset="1" stop-color="#007DFF"/>
+              </linearGradient>
+            </defs>
+            <path d="M16 3c4.6 6 9 10.6 9 16a9 9 0 1 1-18 0c0-5.4 4.4-10 9-16Z" fill="none" stroke="url(#bm)" stroke-width="2"/>
+            <path d="M9.6 20.5h12.8M10.5 24h11M16 13.5v13" stroke="url(#bm)" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+          <span class="brand-word">CropMix<em>Twin</em></span>
+        </a>
+        <ul class="nav-links" id="nav-links">
+          <li><a href="../web/index.html">Model</a></li>
+          <li><a href="#research">Research</a></li>
+          <li><a href="#method">Method</a></li>
+          <li><a href="#principles">Data</a></li>
+        </ul>
+        <a class="nav-cta" href="../web/index.html">Open the app
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 12 12 4M6 4h6v6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+          <span></span><span></span>
+        </button>
+      </nav>
+    </header>
+
+    <div class="hero-body" id="main">
+      <div class="hero-copy">
+        <p class="eyebrow reveal" style="--d:.15s">
+          <span class="eyebrow-line"></span>
+          <span class="eyebrow-text">Kyzylorda Region <i>·</i> Syr Darya basin <i>·</i> Kazakhstan</span>
+        </p>
+
+        <h1 class="headline" id="hero-title" aria-label="Every drop matters.">
+          <span class="row" aria-hidden="true"><span class="word reveal-up" style="--d:.35s">Every</span></span>
+          <span class="row" aria-hidden="true">
+            <span class="word drop reveal-up" style="--d:.5s">Dr<svg class="droplet" viewBox="0 0 60 84">
+                <defs>
+                  <clipPath id="dropClip"><path d="M30 3C42 22 56 37 56 54a26 26 0 0 1-52 0C4 37 18 22 30 3Z"/></clipPath>
+                  <linearGradient id="dropFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#007DFF"/><stop offset=".55" stop-color="#063BCE"/><stop offset="1" stop-color="#001AA4"/>
+                  </linearGradient>
+                </defs>
+                <g clip-path="url(#dropClip)">
+                  <g class="wave">
+                    <path d="M-60 46c10-5 20-5 30 0s20 5 30 0 20-5 30 0 20 5 30 0 20-5 30 0 20 5 30 0V90h-180Z" fill="url(#dropFill)"/>
+                  </g>
+                  <g class="wave wave-2">
+                    <path d="M-60 50c10-4 20-4 30 0s20 4 30 0 20-4 30 0 20 4 30 0 20-4 30 0 20 4 30 0V90h-180Z" fill="#36B9D6" opacity=".35"/>
+                  </g>
+                </g>
+                <path d="M30 3C42 22 56 37 56 54a26 26 0 0 1-52 0C4 37 18 22 30 3Z" fill="none" stroke="#F2F8FA" stroke-width="2.4"/>
+              </svg>p</span>
+          </span>
+          <span class="row" aria-hidden="true"><span class="word reveal-up" style="--d:.65s">Matters.</span></span>
+        </h1>
+
+        <p class="subtitle reveal" style="--d:.95s">
+          Rethinking agricultural water use through science, data and intelligent modelling.
+        </p>
+
+        <div class="actions reveal" style="--d:1.1s">
+          <a class="btn btn-primary" href="../web/index.html">
+            <span>Explore the Model</span>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a class="btn btn-ghost" href="#research">
+            <span>Discover Our Research</span>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v11M5 11l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Floating card: the real structure of the model (no numbers) -->
+      <aside class="pathway glass reveal-float" style="--d:1.3s" aria-label="How the model traces water">
+        <p class="pathway-kicker">The model, in one line</p>
+        <h2 class="pathway-title">From river <em>to root</em></h2>
+        <ol class="steps">
+          <li>
+            <span class="node node-river" aria-hidden="true"></span>
+            <div>
+              <strong>River intake</strong>
+              <span>Water diverted from the Syr Darya</span>
+              <small>Canal conveyance efficiency</small>
+            </div>
+          </li>
+          <li>
+            <span class="node node-field" aria-hidden="true"></span>
+            <div>
+              <strong>Field</strong>
+              <span>Water applied at the field</span>
+              <small>Field application efficiency</small>
+            </div>
+          </li>
+          <li>
+            <span class="node node-crop" aria-hidden="true"></span>
+            <div>
+              <strong>Crop</strong>
+              <span>Water used by the crop</span>
+              <small>ET<sub>c</sub> = ET<sub>0</sub> × K<sub>c</sub> · FAO-56</small>
+            </div>
+          </li>
+        </ol>
+        <p class="pathway-note">A planning model — not a field measurement.</p>
+      </aside>
+    </div>
+
+    <footer class="hero-foot reveal" style="--d:1.45s">
+      <ul class="facts" aria-label="Model foundations">
+        <li><span>ET<sub>0</sub></span>FAO-56 Penman–Monteith</li>
+        <li><span>Climate</span>NASA POWER, 2010–2025</li>
+        <li><span>Crops</span>8 crop groups</li>
+        <li><span>Scenarios</span>36 efficiency combinations</li>
+      </ul>
+      <a class="scroll-cue" href="#research" aria-label="Scroll to research">
+        <span class="scroll-line"><i></i></span>Scroll
+      </a>
+    </footer>
+
+    <p class="art-credit">Illustrative landscape, generated in the browser — not a satellite image or model output.</p>
+  </section>
+
+  <!-- ============ RESEARCH (short, factual) ============ -->
+  <section class="research" id="research" aria-labelledby="research-title">
+    <div class="research-head">
+      <p class="eyebrow eyebrow-dark"><span class="eyebrow-line"></span>Our research</p>
+      <h2 id="research-title">A model built <em>in layers</em>, <br>with every input documented.</h2>
+    </div>
+
+    <ol class="layers" id="method">
+      <li class="layer" tabindex="0">
+        <span class="layer-no">01</span>
+        <h3>Crop water demand</h3>
+        <p>Reference evapotranspiration from the FAO-56 Penman–Monteith equation, multiplied by crop coefficients for eight crop groups grown in the region.</p>
+      </li>
+      <li class="layer" tabindex="0">
+        <span class="layer-no">02</span>
+        <h3>From field to river</h3>
+        <p>Effective rainfall, field application efficiency and canal conveyance losses turn crop demand into the water that must leave the river.</p>
+      </li>
+      <li class="layer" tabindex="0">
+        <span class="layer-no">03</span>
+        <h3>Water-year scenarios</h3>
+        <p>Low, average and high water years, classified from Syr Darya basin runoff, frame what is realistic in a given season.</p>
+      </li>
+    </ol>
+
+    <div class="principles" id="principles">
+      <p class="principle"><strong>Every number is labelled.</strong> Inputs are marked <span class="tag tag-real">real</span> when they come from a cited source and <span class="tag tag-assumed">assumed</span> when they do not; results are always <span class="tag tag-model">modelled</span>.</p>
+      <a class="btn btn-primary btn-small" href="../web/index.html"><span>Explore the Model</span>
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+
+    <p class="proto-note">Design prototype — homepage hero only. The working application lives in <code>web/</code>.</p>
+  </section>
+
+  <script src="landscape.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
