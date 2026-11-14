@@ -12,6 +12,10 @@ from src.layer2_scenarios import build_scenarios
 from src import layer3_optimizer as opt
 from src.export_web import crop_areas_wide
 
+import pandas as pd
+
+from src.backtest import run_backtest
+
 BASE_AREA_YEAR = 2025  # текущая структура посевов для оптимизатора (последний год данных)
 
 
@@ -78,6 +82,20 @@ def main() -> int:
                   f"(структура {r.saving_structure_pct:.1f} + площадь {r.saving_area_pct:.1f})")
         else:
             print(f"  {r.preset:9s} −{r.area_reduction:.0%} площади: решения нет — {r.message}")
+
+    # Модуль 8: бэктест V1–V4 (без калибровки; статус доказательности и n указаны в каждой строке)
+    bt_results, bt_v1, bt_v2, bt_v3 = run_backtest(tables, frames)
+    bt_results.to_csv(OUTPUTS_DIR / "backtest_results.csv", index=False, encoding="utf-8")
+    bt_v1.to_csv(OUTPUTS_DIR / "backtest_v1_scenarios.csv", index=False, encoding="utf-8")
+    bt_v2.to_csv(OUTPUTS_DIR / "backtest_v2_scenarios.csv", index=False, encoding="utf-8")
+    bt_v3.to_csv(OUTPUTS_DIR / "backtest_v3_years.csv", index=False, encoding="utf-8")
+    print("\nБэктест V1–V4 — НЕ валидация; модель не калибровалась (подробно: docs/backtest.md):")
+    for r in bt_results.itertuples():
+        scale, unit = (1e9, "км³") if r.unit in ("m3", "m3/year") else (1.0, "м³/га")
+        obs = (f"{r.observed / scale:,.2f}" if pd.notna(r.observed) else
+               f"{r.observed_low / scale:,.2f}–{r.observed_high / scale:,.2f}" if pd.notna(r.observed_low) else "нет наблюдения")
+        print(f"  {r.check} n={r.n_observations}: наблюдение {obs} {unit}; модель {r.model_base / scale:,.2f} "
+              f"({r.model_min / scale:,.2f}–{r.model_max / scale:,.2f}) {unit} — {r.quantity}")
     return 0
 
 

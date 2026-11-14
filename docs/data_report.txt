@@ -1,17 +1,22 @@
 Статусы чисел по файлам:
-            table  real  assumed  simulated  total  real_pct
-    climate_daily 46462        0          0  46462     100.0
-    climate_sites     6        0          0      6     100.0
-       crop_areas   160        0          0    160     100.0
-      crops_fao56     0       70          0     70       0.0
-       efficiency     0        7          0      7       0.0
-optimizer_presets     0       23          0     23       0.0
-           prices     2        5          0      7      28.6
-       rice_water     0       11          0     11       0.0
-       river_flow    18        0          0     18     100.0
- water_withdrawal     8        0          0      8     100.0
-           yields   264        4          0    268      98.5
-            ИТОГО 46920      120          0  47040      99.7
+(real = число получено из внешнего источника с записью и цитатой в data/SOURCES.md: официальная статистика,
+ публикации или внешние наборы данных. Это не обязательно прямое измерение: климат climate_daily и
+ climate_daily_2026 — сеточный продукт NASA POWER (реанализ MERRA-2 и спутник CERES, ячейка 0.5°×0.625°),
+ а не наблюдения местной метеостанции. assumed = допущение; simulated = результат моделирования.)
+             table  real  assumed  simulated  total  real_pct
+     climate_daily 46462        0          0  46462     100.0
+climate_daily_2026  1638        0          0   1638     100.0
+     climate_sites     6        0          0      6     100.0
+        crop_areas   160        0          0    160     100.0
+       crops_fao56     0       70          0     70       0.0
+        efficiency     0        7          0      7       0.0
+ optimizer_presets     0       23          0     23       0.0
+            prices     2        5          0      7      28.6
+        rice_water     0       11          0     11       0.0
+        river_flow    18        0          0     18     100.0
+  water_withdrawal     8        0          0      8     100.0
+            yields   264        4          0    268      98.5
+             ИТОГО 48558      120          0  48678      99.8
 
 Допущения (assumed): 120
             table           entity                  param   year      value     unit                                                                                                                                                                                                                                     source

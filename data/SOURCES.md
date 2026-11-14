@@ -5,6 +5,12 @@
 Если источник не удалось открыть или прочитать, или нет уверенности в числе
 (единицы, год, область или республика), число помечается `assumed`, а не `real`.
 
+**Что означает `real`.** Число фактически получено из внешнего источника с записью и цитатой здесь: официальная
+статистика, публикация или внешний набор данных. Это **не обязательно прямое измерение**: климат
+(`climate_daily.csv` — S063, `climate_daily_2026.csv` — S091) — сеточный продукт NASA POWER (реанализ MERRA-2 и
+спутниковый продукт CERES, ячейка 0.5°×0.625°), а не наблюдения местной метеостанции; станция GSOD (S064)
+используется только для сверки температуры.
+
 Формат записи (id — `S` и три цифры, по порядку):
 
 ```
@@ -738,3 +744,11 @@
 - quote: USDA SCS (P) Pe = Pt (125 - 0.2 Pt / 125) para Pt < 250 mm Pe = 125 + 0.1 Pt para Pt > 250 mm ; [FAO92] Cropwat. Programa de ordenador para planificar y manejar el riego. FAO. Estudios Riegos y Drenajes nº 46. Pág. 23, 24
 - accessed: 2026-11-12
 - note: **Вторичный источник.** Первоисточник (FAO Irrigation and Drainage Paper 46, CROPWAT, Smith 1992, с. 23–24) открыть не удалось (архив недоступен). Pt и Pe — месячные суммы, мм. В цитате скобка стоит не на месте: буквально Pt·(125 − 0.2·Pt/125) при Pt = 250 мм дало бы 31 150 мм; используется Pt·(125 − 0.2·Pt)/125 — только эта запись непрерывна с второй ветвью (обе дают 150 мм при Pt = 250 мм). Формула — метод (константы метода в коде src/layer1_losses.py), не данные области.
+
+## S091
+- url: https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M_MAX,T2M_MIN,RH2M,WS2M,ALLSKY_SFC_SW_DWN,PRECTOTCORR&community=AG&longitude=65.5&latitude=44.8&start=20260101&end=20260930&format=CSV&time-standard=LST
+- document: NASA POWER (Prediction Of Worldwide Energy Resources), Daily API, community AG — тот же запрос, что S063, период 2026-01-01 … 2026-09-30; сырой файл: data/raw/nasa_power_daily_44.8N_65.5E_2026-01-01_2026-09-30.csv; метаданные загрузки: data/raw/nasa_power_daily_44.8N_65.5E_2026_download.json
+- location: заголовок файла (строки описания параметров); данные — весь файл, 273 дня
+- quote: Dates (month/day/year): 01/01/2026 through 09/30/2026 in LST ; T2M_MAX MERRA-2 Temperature at 2 Meters Maximum (C) ; T2M_MIN MERRA-2 Temperature at 2 Meters Minimum (C) ; RH2M MERRA-2 Relative Humidity at 2 Meters (%) ; WS2M MERRA-2 Wind Speed at 2 Meters (m/s) ; ALLSKY_SFC_SW_DWN CERES SYN1deg All Sky Surface Shortwave Downward Irradiance (MJ/m^2/day) ; PRECTOTCORR MERRA-2 Precipitation Corrected (mm/day)
+- accessed: 2026-11-14
+- note: Реанализ MERRA-2 и спутниковый продукт CERES, а не наблюдения станции; та же ячейка и высота 122.27 м, что S063. Значений -999 нет. Свежие данные NASA POWER могут быть предварительными и позже уточняться. Используются только как отдельный климатический сценарий 2026 г. и для проверки интенсивности на гектар (бэктест V2), а не для валидации водозабора 2026 г.: площадей культур 2026 г. в данных нет. Таблица data/climate_daily_2026.csv получена src/climate_import.py (тот же перенос, что воспроизводит строки 2010–2025 из S063 без расхождений).

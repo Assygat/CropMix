@@ -1,0 +1,69 @@
+{
+ "source_id": "S091",
+ "url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M_MAX,T2M_MIN,RH2M,WS2M,ALLSKY_SFC_SW_DWN,PRECTOTCORR&community=AG&longitude=65.5&latitude=44.8&start=20260101&end=20260930&format=CSV&time-standard=LST",
+ "retrieved_utc": "2026-11-14T09:22:28Z",
+ "period": {
+  "start": "2026-01-01",
+  "end": "2026-09-30",
+  "days": 273
+ },
+ "location": {
+  "latitude": 44.8,
+  "longitude": 65.5,
+  "elevation_m_header": 122.27
+ },
+ "parameters": {
+  "T2M_MAX": {
+   "param": "tmax",
+   "unit": "degC"
+  },
+  "T2M_MIN": {
+   "param": "tmin",
+   "unit": "degC"
+  },
+  "RH2M": {
+   "param": "rh_mean",
+   "unit": "%"
+  },
+  "WS2M": {
+   "param": "u2",
+   "unit": "m/s"
+  },
+  "ALLSKY_SFC_SW_DWN": {
+   "param": "rs",
+   "unit": "MJ/m2/day"
+  },
+  "PRECTOTCORR": {
+   "param": "precip",
+   "unit": "mm"
+  }
+ },
+ "missing_minus999": {
+  "T2M_MAX": 0,
+  "T2M_MIN": 0,
+  "RH2M": 0,
+  "WS2M": 0,
+  "ALLSKY_SFC_SW_DWN": 0,
+  "PRECTOTCORR": 0
+ },
+ "raw_file": "data/raw/nasa_power_daily_44.8N_65.5E_2026-01-01_2026-09-30.csv",
+ "raw_sha256": "2065f0a9932612531090f0258994dc5341c7e249b9e1dc155994e8ffbb632171",
+ "derived_table": "data/climate_daily_2026.csv",
+ "derived_rows": 1638,
+ "header": [
+  "NASA/POWER Source Native Resolution Daily Data",
+  "Dates (month/day/year): 01/01/2026 through 09/30/2026 in LST",
+  "Location: latitude  44.8   longitude 65.5",
+  "elevation from MERRA-2: Average for 0.5 x 0.625 degree lat/lon region = 122.27 meters",
+  "The value for missing source data that cannot be computed or is outside of the sources availability range: -999",
+  "parameter(s):",
+  "T2M_MAX               MERRA-2 Temperature at 2 Meters Maximum (C)",
+  "T2M_MIN               MERRA-2 Temperature at 2 Meters Minimum (C)",
+  "RH2M                  MERRA-2 Relative Humidity at 2 Meters (%)",
+  "WS2M                  MERRA-2 Wind Speed at 2 Meters (m/s)",
+  "ALLSKY_SFC_SW_DWN     CERES SYN1deg All Sky Surface Shortwave Downward Irradiance (MJ/m^2/day)",
+  "PRECTOTCORR           MERRA-2 Precipitation Corrected (mm/day)"
+ ],
+ "use": "Separate 2026 climate scenario and per-hectare intensity check (V2) only; not a validation of 2026 withdrawal.",
+ "caveat": "Recent NASA POWER data (MERRA-2, CERES SYN1deg) may be preliminary and revised later."
+}

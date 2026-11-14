@@ -10,6 +10,12 @@ import pandas as pd
 from src.data_loader import DATA_DIR, DataValidationError, load_all
 
 STATUS_ORDER = ["real", "assumed", "simulated"]
+STATUS_LEGEND = (
+    "(real = число получено из внешнего источника с записью и цитатой в data/SOURCES.md: официальная статистика,\n"
+    " публикации или внешние наборы данных. Это не обязательно прямое измерение: климат climate_daily и\n"
+    " climate_daily_2026 — сеточный продукт NASA POWER (реанализ MERRA-2 и спутник CERES, ячейка 0.5°×0.625°),\n"
+    " а не наблюдения местной метеостанции. assumed = допущение; simulated = результат моделирования.)"
+)
 
 
 def summarize(tables: dict) -> pd.DataFrame:
@@ -58,6 +64,7 @@ def main(data_dir=DATA_DIR) -> int:
         return 0
 
     print("Статусы чисел по файлам:")
+    print(STATUS_LEGEND)
     print(summarize(tables).to_string(index=False))
 
     assumed = assumed_rows(tables)
