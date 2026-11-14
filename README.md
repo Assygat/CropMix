@@ -24,6 +24,19 @@ py -3 -m venv .venv
 .venv\Scripts\python -m pytest
 ```
 
+## Симулятор структуры посевов
+
+Открыть `web/simulator.html` двойным щелчком (сервер и интернет не нужны). Карта области, редактор площадей,
+выбор климата и КПД, сравнение исходной, пользовательской и оптимизированной структур. Это модель для
+планирования, а не измерение; модель не валидирована. Подробно: `docs/simulator.md`.
+
+После пересчёта модели обновить данные симулятора (`web/data/simulator.js`, `web/data/geo.js`):
+
+```
+.venv\Scripts\python -m src.run_all
+.venv\Scripts\python -m src.export_simulator
+```
+
 ## Отчёт по данным (сколько чисел real / assumed / simulated)
 
 ```
