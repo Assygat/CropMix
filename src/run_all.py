@@ -15,6 +15,7 @@ from src.export_web import crop_areas_wide
 import pandas as pd
 
 from src.backtest import run_backtest
+from src.sensitivity import run_sensitivity
 
 BASE_AREA_YEAR = 2025  # текущая структура посевов для оптимизатора (последний год данных)
 
@@ -96,6 +97,17 @@ def main() -> int:
                f"{r.observed_low / scale:,.2f}–{r.observed_high / scale:,.2f}" if pd.notna(r.observed_low) else "нет наблюдения")
         print(f"  {r.check} n={r.n_observations}: наблюдение {obs} {unit}; модель {r.model_base / scale:,.2f} "
               f"({r.model_min / scale:,.2f}–{r.model_max / scale:,.2f}) {unit} — {r.quantity}")
+
+    # Модуль 9: чувствительность W(A, C, E) — НЕ валидация (подробно: docs/sensitivity.md)
+    sens, ranking, sens_sc = run_sensitivity(tables)
+    sens.to_csv(OUTPUTS_DIR / "sensitivity_results.csv", index=False, encoding="utf-8")
+    ranking.to_csv(OUTPUTS_DIR / "sensitivity_ranking.csv", index=False, encoding="utf-8")
+    sens_sc.to_csv(OUTPUTS_DIR / "sensitivity_scenarios.csv", index=False, encoding="utf-8")
+    print("\nЧувствительность — ранжирование по документированным диапазонам (размах W «из реки», база "
+          f"W(A{BASE_AREA_YEAR}, Cmean, E_base) = {sens['river_base_m3'].iloc[0] / 1e9:.2f} км³):")
+    for r in ranking.itertuples():
+        print(f"  {r.rank}. {r.parameter:22s} {r.p_low} … {r.p_high}: {r.river_low_m3 / 1e9:.2f}–{r.river_high_m3 / 1e9:.2f} км³ "
+              f"(размах {r.river_swing_km3:.2f} км³, {r.river_swing_pct_of_base:.1f} %)")
     return 0
 
 

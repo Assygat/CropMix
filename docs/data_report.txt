@@ -14,9 +14,10 @@ climate_daily_2026  1638        0          0   1638     100.0
             prices     2        5          0      7      28.6
         rice_water     0       11          0     11       0.0
         river_flow    18        0          0     18     100.0
+sensitivity_ranges    10        0          0     10     100.0
   water_withdrawal     8        0          0      8     100.0
             yields   264        4          0    268      98.5
-             ИТОГО 48558      120          0  48678      99.8
+             ИТОГО 48568      120          0  48688      99.8
 
 Допущения (assumed): 120
             table           entity                  param   year      value     unit                                                                                                                                                                                                                                     source
