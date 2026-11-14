@@ -69,3 +69,4 @@ footer { padding-bottom: 24px; }
   .slider-ctl input[type=number] { width: 90px; }
   .chart-box { height: 260px; }
 }
+.sim-link a { color: var(--accent); }
