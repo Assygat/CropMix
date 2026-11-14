@@ -752,3 +752,43 @@
 - quote: Dates (month/day/year): 01/01/2026 through 09/30/2026 in LST ; T2M_MAX MERRA-2 Temperature at 2 Meters Maximum (C) ; T2M_MIN MERRA-2 Temperature at 2 Meters Minimum (C) ; RH2M MERRA-2 Relative Humidity at 2 Meters (%) ; WS2M MERRA-2 Wind Speed at 2 Meters (m/s) ; ALLSKY_SFC_SW_DWN CERES SYN1deg All Sky Surface Shortwave Downward Irradiance (MJ/m^2/day) ; PRECTOTCORR MERRA-2 Precipitation Corrected (mm/day)
 - accessed: 2026-11-14
 - note: Реанализ MERRA-2 и спутниковый продукт CERES, а не наблюдения станции; та же ячейка и высота 122.27 м, что S063. Значений -999 нет. Свежие данные NASA POWER могут быть предварительными и позже уточняться. Используются только как отдельный климатический сценарий 2026 г. и для проверки интенсивности на гектар (бэктест V2), а не для валидации водозабора 2026 г.: площадей культур 2026 г. в данных нет. Таблица data/climate_daily_2026.csv получена src/climate_import.py (тот же перенос, что воспроизводит строки 2010–2025 из S063 без расхождений).
+
+## S092
+- url: https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/KAZ/ADM1/geoBoundaries-KAZ-ADM1_simplified.geojson
+- document: geoBoundaries (William & Mary geoLab), gbOpen KAZ ADM1, simplified; метаданные: https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/KAZ/ADM1/geoBoundaries-KAZ-ADM1-metaData.json (копия: data/raw/geo/geoBoundaries-KAZ-ADM1-metaData.json); сырой файл: data/raw/geo/geoBoundaries-KAZ-ADM1_simplified.geojson; метаданные загрузки: data/raw/geo/geo_download.json
+- location: объект shapeName "Kyzylorda Region", shapeISO "KZ-KZY" (Polygon, 474 вершины)
+- quote: метаданные: boundarySource "OpenStreetMap, Wambacher" ; boundaryLicense "Open Data Commons Open Database License 1.0" ; boundaryYear "2017"
+- accessed: 2026-11-14
+- note: Лицензия ODbL 1.0 — нужна атрибуция «© OpenStreetMap contributors, geoBoundaries (ODbL)». Границы на 2017 г. и упрощены (simplified): в файле ещё старое название «South Kazakhstan Region». Только для отображения границы области на карте симулятора (модуль 10); в расчётах воды не используются.
+
+## S093
+- url: https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/KAZ/ADM2/geoBoundaries-KAZ-ADM2_simplified.geojson
+- document: geoBoundaries, gbOpen KAZ ADM2, simplified; метаданные: https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/KAZ/ADM2/geoBoundaries-KAZ-ADM2-metaData.json (копия: data/raw/geo/geoBoundaries-KAZ-ADM2-metaData.json); сырой файл: data/raw/geo/geoBoundaries-KAZ-ADM2_simplified.geojson
+- location: объекты shapeName "Aral`skiy", "Kazalinskiy", "Karmakchinskiy", "Zhalagashskiy", "Terenozekskiy", "Qyzylorda", "Shieliyskiy", "Zhanakorganskiy"
+- quote: метаданные: boundarySource "OpenStreetMap, Wambacher" ; boundaryLicense "Open Data Commons Open Database License 1.0" ; boundaryYear "2017"
+- accessed: 2026-11-14
+- note: Атрибута «область» в ADM2 нет. Принадлежность к области определена расчётом (src/export_simulator.py): доля площади района внутри полигона S092 по сетке 0.03°. У 8 объектов доля 0.905–1.000, у всех остальных ≤ 0.018 (Иргизский, Улытауский); порог 0.5. Упрощённые ADM1 и ADM2 совпадают не полностью (IoU ≈ 0.95 по сетке). Метки 2017 г. (транслитерация OSM); соответствие современным названиям — S094, S095. Районных данных о посевах в проекте нет: районы только показываются, модель считает область целиком.
+
+## S094
+- url: https://en.wikipedia.org/wiki/Kyzylorda_Region
+- document: Wikipedia, «Kyzylorda Region», раздел «Administrative divisions»
+- location: список районов и города областного значения
+- quote: районы Aral, Kazaly, Karmakshy, Zhalagash, Syrdariya, Shieli, Zhanakorgan; город Kyzylorda
+- accessed: 2026-11-14
+- note: **Вторичный источник** (энциклопедия). Используется только для английских подписей районов на карте (src/export_simulator.py, DISTRICT_NAMES); исходная метка geoBoundaries показывается рядом. Байконур (арендован Россией) в ADM2 2017 г. отдельным объектом не выделен.
+
+## S095
+- url: https://en.wikipedia.org/wiki/Terenozek
+- document: Wikipedia, «Terenozek»; также https://en.wikipedia.org/wiki/Syrdariya_District
+- location: первая фраза статьи
+- quote: Terenozek is an urban-type settlement and the administrative centre of Syrdariya District of Kyzylorda Region
+- accessed: 2026-11-14
+- note: **Вторичный источник.** Объясняет, почему район в S093 назван «Terenozekskiy» (по районному центру): на карте подпись «Syrdariya District», исходная метка показывается рядом.
+
+## S096
+- url: https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/ne_10m_rivers_lake_centerlines.geojson
+- document: Natural Earth 1:10m Physical, Rivers + lake centerlines, v5.1.2; лицензия: https://www.naturalearthdata.com/about/terms-of-use/ (public domain); сырой файл (выборка): data/raw/geo/ne_10m_rivers_lake_centerlines_syr_darya.geojson; SHA-256 полного файла — data/raw/geo/geo_download.json
+- location: 2 объекта с name "Syr  Darya" (в источнике два пробела): featurecla "River" и "Lake Centerline", scalerank 5
+- quote: name "Syr  Darya" ; featurecla "River" ; featurecla "Lake Centerline"
+- accessed: 2026-11-14
+- note: Генерализованная осевая линия масштаба 1:10 млн — только для ориентира на карте (обрезана до окрестности области), не трасса русла и не каналы. В расчётах не используется.

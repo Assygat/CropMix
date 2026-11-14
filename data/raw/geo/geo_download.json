@@ -1,0 +1,13 @@
+{
+ "retrieved_utc": "2026-11-14T10:29:18Z",
+ "files": {
+  "geoBoundaries-KAZ-ADM1_simplified.geojson": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/KAZ/ADM1/geoBoundaries-KAZ-ADM1_simplified.geojson",
+  "geoBoundaries-KAZ-ADM2_simplified.geojson": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/KAZ/ADM2/geoBoundaries-KAZ-ADM2_simplified.geojson",
+  "ne_10m_rivers_lake_centerlines_syr_darya.geojson": "subset (features with name containing 'Syr') of https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/ne_10m_rivers_lake_centerlines.geojson"
+ },
+ "natural_earth_full_file_sha256": "bb854a900ecbd3b408df46d5e16e3e0f974ba55993f9d8b5c26e855273c0905a",
+ "licenses": {
+  "geoBoundaries KAZ ADM1/ADM2 (gbOpen, source OpenStreetMap / Wambacher, year represented 2017)": "Open Data Commons Open Database License (ODbL) 1.0",
+  "Natural Earth 10m rivers v5.1.2": "public domain"
+ }
+}
