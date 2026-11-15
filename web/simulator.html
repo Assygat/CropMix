@@ -52,6 +52,12 @@
         <div class="card-head">
           <h2 id="map-title">Region map</h2>
           <span class="chip" title="geoBoundaries gbOpen KAZ ADM2, boundary year 2017">Administrative boundaries · 2017</span>
+          <div class="mode-switch" role="radiogroup" aria-label="Map mode" id="mode-switch" hidden>
+            <input type="radio" name="map-mode" id="mode-explore" value="explore" class="visually-hidden-input" checked>
+            <label for="mode-explore">Explore</label>
+            <input type="radio" name="map-mode" id="mode-edit" value="edit" class="visually-hidden-input">
+            <label for="mode-edit">Edit map</label>
+          </div>
         </div>
 
         <div class="map-frame">
@@ -59,6 +65,11 @@
                aria-label="Interactive map of Kyzylorda Region" aria-describedby="map-help">
             <div id="map-tooltip" class="map-tooltip" role="presentation" hidden></div>
           </div>
+
+          <p class="schematic-badge" id="schematic-badge" hidden>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8 15 14H1Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 6v4M8 11.9v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span><strong>Schematic — not actual field locations</strong> · 1 cell = 100 ha</span>
+          </p>
 
           <div class="map-controls" role="toolbar" aria-label="Map zoom">
             <button type="button" class="icon-btn" id="zoom-in" aria-label="Zoom in">
@@ -82,6 +93,8 @@
           </div>
         </div>
 
+        <p id="map-help-edit" class="map-help" hidden>Edit map: choose a crop and paint with the brush; the eraser removes sown area.
+          Hand tool or two fingers to pan, scroll or pinch to zoom. Cells are schematic: 1 cell = 100 ha of sown area, positions are illustrative.</p>
         <p id="map-help" class="map-help">Drag to pan, scroll or pinch to zoom. Keyboard: Tab to a territory,
           Enter to select, <kbd>+</kbd> / <kbd>−</kbd> to zoom, arrow keys to pan, <kbd>0</kbd> to reset, <kbd>Esc</kbd> to clear.</p>
 
@@ -96,12 +109,15 @@
       </section>
 
       <aside class="card info-card" aria-label="Territory details">
-        <div id="info" aria-live="polite">
-          <!-- filled by simulator.js -->
-        </div>
+        <div class="explore-panel" id="explore-panel">
+          <div id="info" aria-live="polite">
+            <!-- filled by simulator.js -->
+          </div>
 
-        <h3 class="list-title" id="territories-title">Territories (2017)</h3>
-        <ul class="territories" id="territories" aria-labelledby="territories-title"></ul>
+          <h3 class="list-title" id="territories-title">Territories (2017)</h3>
+          <ul class="territories" id="territories" aria-labelledby="territories-title"></ul>
+        </div>
+        <div class="mosaic-panel" id="mosaic-panel" hidden><!-- Crop Editor tools, filled by sim_mosaic_view.js --></div>
       </aside>
     </div>
 
@@ -137,6 +153,8 @@
             <li>The region outline is drawn from the outer edges of the district layer, so districts and outline match exactly.</li>
             <li>No fields, farms, crop areas or water use are shown by district: the project has no such data,
               and the model treats Kyzylorda Region as one unit.</li>
+            <li>Edit map shows a schematic crop mosaic: 1 cell = 100 ha of the region's sown area. Cell positions are
+              illustrative, not actual field locations; only the number of cells per crop changes the scenario.</li>
             <li>The Syr Darya line is a generalised 1:10m centreline, not the river channel or the canal network.</li>
             <li>Projection: equirectangular centred on the region; distances are approximate.</li>
           </ul>
@@ -162,6 +180,8 @@
   <script src="sim_structure.js"></script>
   <script src="sim_editor.js"></script>
   <script src="sim_map.js"></script>
+  <script src="sim_mosaic.js"></script>
+  <script src="sim_mosaic_view.js"></script>
   <script src="simulator.js"></script>
 </body>
 </html>

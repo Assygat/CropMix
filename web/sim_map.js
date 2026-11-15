@@ -244,6 +244,10 @@
 
     const riverD = geo.river.geometry.coordinates.map((l) => pathData(l, proj.project, false)).join("");
     const gDistricts = svgEl("g", { class: "districts" }, svg);
+    // Crop Editor layers (visible only in Edit map mode; CSS hides them in Explore, so its drawing is unchanged).
+    // The mosaic is clipped to the exact region outline; district borders are redrawn above the cells.
+    const gMosaic = svgEl("g", { class: "mosaic-layer", "clip-path": "url(#region-clip)", "aria-hidden": "true" }, svg);
+    const bordersOverlay = svgEl("path", { class: "district-borders", d: "", "aria-hidden": "true" }, svg);
     svgEl("path", { class: "river river-outside", d: riverD, "aria-hidden": "true" }, svg);
     const gRiverIn = svgEl("g", { "clip-path": "url(#region-clip)", "aria-hidden": "true" }, svg);
     svgEl("path", { class: "river river-casing", d: riverD }, gRiverIn);
@@ -272,6 +276,13 @@
       text.textContent = p.kind === "city" ? p.name : p.name.replace(/ District$/, "");
       labels.set(p.id, { g, text, dot, x: lx, y: ly });
     }
+    bordersOverlay.setAttribute("d", [...paths.values()].map((v) => v.path.getAttribute("d")).join(""));
+    const gCropLabels = svgEl("g", { class: "crop-labels", "aria-hidden": "true" }, svg);
+    const outlineRing = outerBoundary(districts)[0].map(proj.project);
+    let mode = "explore";
+    let editHandler = null;            // { paints(), down(pt), move(pt), up(pointerType), cancel(pointerType), hover(pt|null, clientX, clientY) }
+    let stroke = null;                 // pointerId of an active brush stroke
+    const viewListeners = [];
     container.appendChild(svg);
 
     // ---------------------------------------------------------------- view
@@ -303,6 +314,7 @@
       }
       updateScaleBar(upp);
       container.dataset.zoom = zoomLevel(view, base).toFixed(2);
+      for (const fn of viewListeners) fn(upp);
     }
 
     let animation = null;
@@ -391,9 +403,24 @@
       return t ? t.getAttribute("data-id") : null;
     }
 
+    const painting = () => mode === "edit" && editHandler && editHandler.paints();
+
     function onPointerDown(e) {
       if (e.pointerType === "mouse" && e.button !== 0) return;
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (painting()) {                                  // Edit map, brush or eraser: drag paints instead of panning
+        if (pointers.size === 1) {
+          stroke = e.pointerId;
+          try { svg.setPointerCapture(e.pointerId); } catch (_) { /* pointer already gone: the stroke still ends on pointerup */ }
+          editHandler.down(toSvgPoint(e.clientX, e.clientY));
+        } else if (pointers.size === 2) {                // second finger: cancel the stroke and pinch-zoom
+          if (stroke !== null) editHandler.cancel(e.pointerType);
+          stroke = null;
+          const [a, b] = [...pointers.values()];
+          pinch = { dist: Math.hypot(a.x - b.x, a.y - b.y) };
+        }
+        return;
+      }
       if (pointers.size === 1) {
         drag = { startX: e.clientX, startY: e.clientY, lastX: e.clientX, lastY: e.clientY, moved: false,
                  id: districtIdAt(e.target), pointerId: e.pointerId };
@@ -417,6 +444,13 @@
         pinch.dist = dist;
         return;
       }
+      if (mode === "edit" && editHandler) {
+        if (stroke !== null && stroke === e.pointerId) { editHandler.move(toSvgPoint(e.clientX, e.clientY)); return; }
+        if (painting()) {
+          if (e.pointerType !== "touch") editHandler.hover(toSvgPoint(e.clientX, e.clientY), e.clientX, e.clientY);
+          return;
+        }
+      }
       if (drag && pointers.has(e.pointerId)) {
         if (!drag.moved && Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) > DRAG_THRESHOLD_PX) {
           drag.moved = true;
@@ -434,6 +468,10 @@
         }
       }
       if (e.pointerType !== "touch") {
+        if (mode === "edit" && editHandler) {           // Edit map (hand tool): crop tooltip instead of districts
+          editHandler.hover(toSvgPoint(e.clientX, e.clientY), e.clientX, e.clientY);
+          return;
+        }
         const id = districtIdAt(e.target);
         setHover(id);
         showTooltip(id, e.clientX, e.clientY);
@@ -441,11 +479,15 @@
     }
 
     function onPointerUp(e) {
+      if (stroke !== null && stroke === e.pointerId) {
+        if (e.type === "pointerup") editHandler.up(e.pointerType); else editHandler.cancel(e.pointerType);
+        stroke = null;
+      }
       const wasClick = drag && !drag.moved && drag.pointerId === e.pointerId && pointers.size === 1;
       pointers.delete(e.pointerId);
       if (svg.hasPointerCapture(e.pointerId)) svg.releasePointerCapture(e.pointerId);
       if (pointers.size < 2) pinch = null;
-      if (wasClick && e.type === "pointerup") {
+      if (wasClick && e.type === "pointerup" && mode === "explore") {
         const id = drag.id;
         select(id && id !== selectedId ? id : null);   // clicking the selected territory or empty map clears it
       }
@@ -456,7 +498,25 @@
     }
 
     function onPointerLeave(e) {
-      if (pointers.size === 0 && e.pointerType !== "touch") { setHover(null); showTooltip(null); }
+      if (pointers.size === 0 && e.pointerType !== "touch") {
+        setHover(null); showTooltip(null);
+        if (mode === "edit" && editHandler) editHandler.hover(null);
+      }
+    }
+
+    /** "explore" (unchanged map) or "edit" (Crop Editor: no district selection; tools handle the pointer). */
+    function setMode(next) {
+      if (next !== "explore" && next !== "edit") throw new Error("Unknown map mode " + next);
+      if (next === mode) return;
+      if (stroke !== null && editHandler) editHandler.cancel();
+      stroke = null;
+      mode = next;
+      container.classList.toggle("is-edit", mode === "edit");
+      container.dataset.mode = mode;
+      select(null);
+      setHover(null);
+      showTooltip(null);
+      for (const { path } of paths.values()) path.setAttribute("tabindex", mode === "edit" ? "-1" : "0");
     }
 
     function onWheel(e) {
@@ -517,6 +577,15 @@
       getView: () => Object.assign({}, view),
       getZoom: () => zoomLevel(view, base),
       destroy: () => { if (resizeObserver) resizeObserver.disconnect(); svg.remove(); },
+      // Crop Editor hooks (stage E3)
+      setMode,
+      getMode: () => mode,
+      setEditHandler: (h) => { editHandler = h; },
+      onViewChange: (fn) => { viewListeners.push(fn); },
+      unitsPerPixel,
+      outlineRing,
+      layers: { mosaic: gMosaic, cropLabels: gCropLabels },
+      svg,
     };
   }
 

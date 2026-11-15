@@ -15,6 +15,11 @@
 
   const MIN_LABEL_SHARE = 7;     // print the % inside a segment only when it is at least this wide (%)
   const AXIS_TICKS = [0, 25, 50, 75, 100];
+  // Display order of stacked-bar segments (palette A′): no two hard-to-separate colours touch. Legend, table and
+  // per-crop rows keep the data order.
+  const STACK_ORDER = ["rice", "fodder", "vegetables_open", "melons", "potato", "grain_other", "wheat", "oilseeds"];
+  const stackOrder = (crops) => [...crops].sort((a, b) => rank(a.id) - rank(b.id));
+  const rank = (id) => { const i = STACK_ORDER.indexOf(id); return i < 0 ? STACK_ORDER.length : i; };
 
   function h(tag, attrs, children) {
     const node = document.createElement(tag);
@@ -106,7 +111,7 @@
     function renderStack(bar, areas, sh, label) {
       bar.replaceChildren();
       const desc = [];
-      for (const c of crops) {
+      for (const c of stackOrder(crops)) {
         const s = sh.shares[c.id];
         if (s === null) continue;
         desc.push(`${c.name} ${fmt.pct(s)}`);
@@ -165,5 +170,5 @@
     return { render };
   }
 
-  return Object.freeze({ createStructureChart, shares });
+  return Object.freeze({ createStructureChart, shares, STACK_ORDER });
 });

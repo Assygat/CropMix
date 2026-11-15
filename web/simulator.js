@@ -157,6 +157,7 @@
   const editorRoot = document.getElementById("editor");
   let compare = null;
   let conditionsApi = null;
+  let mosaic = null;
   const perf = { rangeMs: [] };          // measured durations of the 612-condition saving range (browser QA)
   if (!model || !sim || !window.CropMixSimCore || !window.CropMixState || !window.CropMixEditor || !window.CropMixStructure ||
       !window.CropMixConditions || !window.CropMixCompare) {
@@ -194,13 +195,44 @@
       sim, State, Structure: window.CropMixStructure,
       compute: (areas, presetId) => X.compareAll(core, areas, presetId, cond),
       describeConditions: () => Cond.describe(condOpts, cond),
-      onRender: (result, st) => compare.render(result, st.preset, result.cmp.constraints.my.ok, rangeFor(st.areas, st.preset)),
+      onRender: (result, st) => {
+        compare.render(result, st.preset, result.cmp.constraints.my.ok, rangeFor(st.areas, st.preset));
+        if (mosaic) mosaic.update(st.areas);             // the mosaic follows the editor state (one source of areas)
+      },
     });
+    mosaic = buildCropEditor(State);
     conditionsApi = buildConditionsPanel(Cond, condOpts, () => cond, (next) => {
       if (next === cond) return;
       cond = next;
       editor.refresh();                                  // areas, preset and undo history stay as they are
     });
+  }
+
+  // ---------------------------------------------------------------- Crop Editor (schematic mosaic, Edit map mode)
+
+  function buildCropEditor(State) {
+    if (!window.CropMixMosaic || !window.CropMixMosaicView) return null;   // Explore keeps working without it
+    const view = window.CropMixMosaicView.createMosaicView({
+      map: instance, Mosaic: window.CropMixMosaic, sim, editor, fmt: State.fmt,
+      panel: document.getElementById("mosaic-panel"),
+      badge: document.getElementById("schematic-badge"),
+      tooltip: document.getElementById("map-tooltip"),
+    });
+    const sw = document.getElementById("mode-switch");
+    const setMode = (mode) => {
+      view.setMode(mode);
+      const edit = mode === "edit";
+      document.getElementById(`mode-${mode}`).checked = true;
+      document.getElementById("explore-panel").hidden = edit;
+      document.getElementById("map-help").hidden = edit;
+      document.getElementById("map-help-edit").hidden = !edit;
+      document.getElementById("map").setAttribute("aria-describedby", edit ? "map-help-edit" : "map-help");
+      document.querySelector(".map-card").classList.toggle("is-edit", edit);
+    };
+    for (const m of ["explore", "edit"]) document.getElementById(`mode-${m}`).addEventListener("change", () => setMode(m));
+    sw.hidden = false;
+    view.setPageMode = setMode;
+    return view;
   }
 
   // ---------------------------------------------------------------- conditions panel (climate + 36 efficiencies)
@@ -265,7 +297,7 @@
     return { sync, set: (next) => { setCond(next); sync(); } };
   }
 
-  window.CropMixSimulatorPage = { map: instance, editor, compare, perf,                      // for browser QA only
+  window.CropMixSimulatorPage = { map: instance, editor, compare, perf, mosaic,                      // for browser QA only
     setConditions: (climate, efficiency) => conditionsApi.set(window.CropMixConditions.makeConditions(
       window.CropMixConditions.createOptions(window.CROPMIX_SIMULATOR), climate, efficiency)) };
 })();

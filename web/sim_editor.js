@@ -344,6 +344,8 @@
       undo: () => { invalid.clear(); commit(State.undo(state), true); },
       reset: () => { invalid.clear(); commit(State.resetToBaseline(state, baseline), true); },
       startFromOptimized,
+      /** Replaces all areas at once (Crop Editor brush stroke): one undo step, same State.replaceAreas path. */
+      applyAreas: (areas) => { invalid.clear(); commit(State.replaceAreas(state, areas), true); },
       /** Re-evaluates under new conditions; areas, preset and undo history are unchanged. */
       refresh: () => render(false),
     };

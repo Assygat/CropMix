@@ -281,16 +281,19 @@ h1 em { font-style: italic; color: var(--sky); }
    Stage 5 — Crop area editor and crop structure
    ===================================================================================================== */
 :root {
-  /* Categorical crop colours — dataviz reference palette (dark steps), fixed order = simulator.json crop order.
-     Validated on the card surface #0c1f39: lightness band, chroma, CVD dE >= 8.4 (adjacent), normal dE >= 19.3, contrast >= 3:1. */
-  --crop-rice: #3987e5;
-  --crop-wheat: #d95926;
-  --crop-potato: #199e70;
-  --crop-fodder: #c98500;
-  --crop-vegetables_open: #d55181;
-  --crop-melons: #008300;
-  --crop-oilseeds: #9085e9;
-  --crop-grain_other: #e66767;
+  /* Categorical crop colours — palette A′ (semantic hues: rice red, wheat green, fodder blue …), one palette for the
+     whole simulator. Contrast on the card #0c1f39 >= 3.26:1. Stacked bars use the display order in sim_structure.js
+     (rice, fodder, vegetables, melons, potato, other grains, wheat, oilseeds): adjacent CVD dE >= 8.0, normal >= 18.2.
+     In the mosaic every pair can touch, so identity never relies on colour alone: direct labels, tooltip, legend
+     highlight and an optional Patterns toggle. Segment labels: white on rice/melons/oilseeds, dark #061522 elsewhere. */
+  --crop-rice: #c24146;
+  --crop-wheat: #44a660;
+  --crop-potato: #a59236;
+  --crop-fodder: #4d9bcb;
+  --crop-vegetables_open: #ca723c;
+  --crop-melons: #8166c3;
+  --crop-oilseeds: #9b632d;
+  --crop-grain_other: #b9719a;
   --up: #F4A77E;          /* more water: text with a + sign, never colour alone */
   --down: var(--mint);    /* less water: text with a minus sign */
   --bad: #F2B84B;
@@ -475,7 +478,7 @@ h1 em { font-style: italic; color: var(--sky); }
 .seg:hover { filter: brightness(1.15); }
 /* I2: dark text on the crop colours (contrast 4.68–6.01:1); white only on melons green (4.95:1) */
 .seg-label { font: 600 12px/1 var(--sans); color: #061522; white-space: nowrap; }
-.seg[data-crop="melons"] .seg-label { color: #ffffff; }
+.seg[data-crop="rice"] .seg-label, .seg[data-crop="melons"] .seg-label, .seg[data-crop="oilseeds"] .seg-label { color: #ffffff; }
 .stack-empty { font-size: 13px; color: var(--ice-64); align-self: center; }
 .axis-row { margin-top: -4px; }
 .stack-axis { position: relative; height: 16px; font: 500 11px/1 var(--label); color: var(--ice-64); }
@@ -729,4 +732,112 @@ html { scroll-padding-top: 190px; }        /* focused fields are never hidden un
   }
   .segmented input:checked + label .seg-sub, .segmented input:checked + label .seg-name { color: HighlightText; }
   .segmented label, .cond-seg label { border: 1px solid ButtonText; }
+}
+
+/* =====================================================================================================
+   Stage E3 — Crop Editor: schematic crop mosaic on the map ("Edit map" mode)
+   Explore mode draws nothing new: every mosaic layer is hidden unless the map has .is-edit.
+   ===================================================================================================== */
+.mode-switch { display: inline-flex; padding: 3px; margin-left: auto; border-radius: 12px; background: rgba(6, 21, 34, .6); border: 1px solid var(--control-line); }
+.mode-switch label {
+  min-height: 36px; padding: 0 14px; display: inline-flex; align-items: center; border-radius: 9px; cursor: pointer;
+  font: 600 13px/1 var(--sans); color: var(--ice-80); transition: background .2s, color .2s;
+}
+.mode-switch label:hover { background: rgba(0, 125, 255, .12); color: var(--ice); }
+.mode-switch input:checked + label { background: linear-gradient(180deg, #0A5CF0, var(--ocean)); color: #fff; }
+.mode-switch input:focus-visible + label { outline: 2px solid var(--sky); outline-offset: 2px; }
+.mode-switch[hidden], .mosaic-panel[hidden], .explore-panel[hidden], .schematic-badge[hidden], .map-help[hidden], .mz-note[hidden] { display: none !important; }
+
+.map:not(.is-edit) .mosaic-layer, .map:not(.is-edit) .district-borders, .map:not(.is-edit) .crop-labels { display: none; }
+.map.is-edit .labels, .map.is-edit .highlights { display: none; }
+.map.is-edit .district { cursor: inherit; fill: rgba(142, 194, 255, .04); transition: none; }
+.map.is-edit[data-tool="brush"], .map.is-edit[data-tool="eraser"] { cursor: crosshair; }
+.map.is-edit[data-tool="hand"] { cursor: grab; }
+
+.mosaic-layer { pointer-events: none; }
+.mz-crop { transition: opacity .2s ease; }
+.mosaic-layer.has-focus .mz-crop:not(.is-focus) { opacity: .28; }
+.mz-unsown { fill: rgba(242, 248, 250, .08); }
+.mz-hatch { stroke: rgba(6, 21, 34, .55); }
+.mz-ghost { animation: mz-fade 360ms var(--ease-out) forwards; }
+@keyframes mz-fade { from { opacity: 1; } to { opacity: 0; } }
+.mz-brush { fill: rgba(242, 248, 250, .14); stroke: var(--ice); stroke-width: 1.25px; vector-effect: non-scaling-stroke; }
+.mz-brush.is-eraser { fill: rgba(6, 21, 34, .35); stroke-dasharray: 3 2; }
+.district-borders {
+  fill: none; stroke: rgba(6, 21, 34, .8); stroke-width: 1.4px; stroke-linejoin: round; pointer-events: none;
+  vector-effect: non-scaling-stroke;
+}
+.crop-labels { pointer-events: none; }
+.mz-label {
+  fill: var(--ice); font-family: var(--sans); font-weight: 700; letter-spacing: .01em;
+  paint-order: stroke; stroke: rgba(6, 21, 34, .88); stroke-width: 3.5px; stroke-linejoin: round; vector-effect: non-scaling-stroke;
+}
+
+.schematic-badge {
+  position: absolute; left: 50%; top: 12px; z-index: 2; transform: translateX(-50%); margin: 0; max-width: calc(100% - 132px);
+  display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 10px; pointer-events: none;
+  font: 500 12px/1.25 var(--sans); color: var(--abyss); background: #F2B84B; box-shadow: 0 8px 24px -10px rgba(0, 0, 0, .7);
+}
+.schematic-badge span { white-space: nowrap; }
+.schematic-badge strong { font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.schematic-badge svg { width: 16px; height: 16px; flex: none; }
+
+.mosaic-panel .info-title { margin-bottom: 10px; }
+.mz-schematic { margin: 0 0 14px; padding: 10px 12px; border-radius: 10px; font-size: 13px; line-height: 1.45;
+  color: var(--ice-80); background: rgba(242, 184, 75, .1); border: 1px solid rgba(242, 184, 75, .45); }
+.mz-schematic strong { color: #F2B84B; }
+.mz-row { display: grid; gap: 6px; margin-bottom: 12px; }
+.mz-label-sm { font: 500 11px/1.2 var(--label); letter-spacing: .12em; text-transform: uppercase; color: var(--ice-64); }
+.mz-seg { display: flex; padding: 3px; border-radius: 12px; background: rgba(6, 21, 34, .6); border: 1px solid var(--control-line); }
+.mz-seg label {
+  flex: 1; min-height: 40px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border-radius: 9px; cursor: pointer; font: 600 13px/1 var(--sans); color: var(--ice-80); white-space: nowrap;
+}
+.mz-seg label .icon svg { width: 16px; height: 16px; display: block; }
+.mz-seg label:hover { background: rgba(0, 125, 255, .12); color: var(--ice); }
+.mz-seg input:checked + label { background: linear-gradient(180deg, #0A5CF0, var(--ocean)); color: #fff; }
+.mz-seg input:focus-visible + label { outline: 2px solid var(--sky); outline-offset: 2px; }
+.mz-sizes label { font-size: 12px; padding: 0 4px; }
+.mz-dot { width: var(--d); height: var(--d); border-radius: 50%; background: currentColor; flex: none; }
+
+.mz-crops { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.mz-pick {
+  display: grid; grid-template-columns: 16px 1fr auto auto; align-items: center; gap: 10px; min-height: 40px; padding: 4px 10px;
+  border-radius: 10px; border: 1px solid transparent; cursor: pointer; font-size: 14px;
+}
+.mz-pick:hover { background: rgba(242, 248, 250, .04); }
+.mz-crops input:checked + .mz-pick { background: rgba(0, 125, 255, .14); border-color: var(--sky); }
+.mz-crops input:focus-visible + .mz-pick { outline: 2px solid var(--sky); outline-offset: 1px; }
+.mz-swatch { width: 16px; height: 16px; border-radius: 4px; background: var(--c); }
+.has-patterns .mz-swatch[data-crop="wheat"], .has-patterns .mz-swatch[data-crop="vegetables_open"],
+.has-patterns .mz-swatch[data-crop="oilseeds"], .has-patterns .mz-swatch[data-crop="grain_other"] {
+  background: repeating-linear-gradient(45deg, var(--c) 0 3px, rgba(6, 21, 34, .55) 3px 4.5px);
+}
+.mz-crop-name { font-weight: 600; }
+.mz-share { font-variant-numeric: tabular-nums; color: var(--ice); }
+.mz-cells { font: 500 12px/1 var(--label); color: var(--ice-80); font-variant-numeric: tabular-nums; min-width: 64px; text-align: right; }
+.mz-totals { margin: 12px 0 0; font-size: 13px; color: var(--ice-80); font-variant-numeric: tabular-nums; }
+.mz-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.mz-actions .tool-btn { min-height: 40px; padding: 0 12px; font-size: 13px; }
+.mz-actions .tool-btn .icon svg { width: 16px; height: 16px; display: block; }
+.mz-actions .tool-btn[aria-pressed="true"] { background: rgba(0, 125, 255, .22); border-color: var(--sky); }
+.mz-note { margin: 10px 0 0; font-size: 13px; color: #F2B84B; }
+.mz-help { margin: 12px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--ice-64); }
+
+@media (max-width: 720px) {
+  .mode-switch { margin-left: 0; width: 100%; }
+  .mode-switch label { flex: 1; justify-content: center; }
+  .schematic-badge { left: 12px; right: 64px; top: auto; bottom: 52px; transform: none; max-width: none; font-size: 11.5px; }
+  .schematic-badge span { white-space: normal; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mz-ghost { animation: none; opacity: 0; }
+  .mz-crop { transition: none; }
+}
+@media (forced-colors: active) {
+  .mosaic-layer, .mz-swatch, .schematic-badge { forced-color-adjust: none; }
+  .schematic-badge { border: 2px solid CanvasText; }
+  .mode-switch input:checked + label, .mz-seg input:checked + label {
+    forced-color-adjust: none; background: Highlight; color: HighlightText; outline: 2px solid Highlight;
+  }
 }
