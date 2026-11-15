@@ -337,7 +337,7 @@
   }
 
   const NOTES = Object.freeze([
-    "Planning model, not a field measurement. It is not validated: in the backtest the model is 1.3–1.7 times above observed withdrawal.",
+    "Planning model, not a field measurement, and not validated. The closest backtest check (V1: one partial-season observation, n = 1, with partly different coverage) gave modelled river withdrawal about 1.7 times the observed value. One observation is not enough to conclude a systematic overestimate, and the other checks are not directly comparable (docs/backtest.md).",
     "Optimized = minimum modelled river withdrawal under Cmean / E_base within the preset's limits (module 6). It is not an economic optimum: income is not modelled. It is not re-optimized when conditions change.",
     "Savings are always shown with their range over 17 climates × 36 efficiency scenarios. The range reflects assumptions, not a probability.",
     "Climate: NASA POWER reanalysis at one grid point. 'Mean 2010–2025' averages the yearly coefficients; it is not a projection. The 2026 climate is not available here.",

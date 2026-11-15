@@ -80,8 +80,10 @@ ATTRIBUTION = {
 }
 
 DISCLAIMERS = [
-    "Planning model, not a field measurement. The model is not validated: the backtest shows modelled "
-    "river withdrawal 1.3–1.7 times above observations.",
+    "Planning model, not a field measurement, and not validated. The closest backtest check (V1: one "
+    "partial-season observation, n = 1, with partly different coverage) gave modelled river withdrawal about "
+    "1.7 times the observed value. One observation is not enough to conclude a systematic overestimate, and "
+    "the other checks are not directly comparable (docs/backtest.md).",
     "The whole Kyzylorda Region is one modelling unit. District boundaries are shown for orientation only; "
     "the project has no crop data by district.",
     "Optimized structures minimise modelled river withdrawal under mean climate (Cmean, 2010–2025) and baseline "

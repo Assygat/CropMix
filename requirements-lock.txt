@@ -1,0 +1,15 @@
+# Проверенный набор версий (pip freeze), на котором получены outputs/ и проходят все тесты.
+# Проверено только: Windows 11, CPython 3.14.2 (64-bit), 2026-11-15. Другие версии Python и пакетов не проверялись.
+# Установка: python -m pip install -r requirements-lock.txt
+# Прямые зависимости — requirements.txt; остальные строки — их зависимости, закреплённые для воспроизводимости.
+colorama==0.4.6
+iniconfig==2.3.1
+numpy==2.5.4
+packaging==26.3
+pandas==3.1.1
+pluggy==1.7.0
+Pygments==2.21.0
+pytest==9.2.0
+python-dateutil==4.0.0
+scipy==1.18.1
+tzdata==2026.6

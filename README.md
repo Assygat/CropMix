@@ -14,9 +14,13 @@
 ## Установка (Windows)
 
 ```
-py -3 -m venv .venv
-.venv\Scripts\python -m pip install -r requirements.txt
+py -3.14 -m venv .venv
+.venv\Scripts\python -m pip install -r requirements-lock.txt
 ```
+
+Проверено только на Windows 11 с CPython 3.14.2 (64-bit) и версиями из `requirements-lock.txt` (полный закреплённый
+набор, на нём получены `outputs/` и проходят все тесты). `requirements.txt` — прямые зависимости в тех же версиях.
+Другие версии Python и пакетов не проверялись. Для тестов симулятора нужен Node.js (проверено на v24.22.1).
 
 ## Тесты
 
