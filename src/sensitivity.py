@@ -133,7 +133,7 @@ def run_sensitivity(tables):
         kc_w[side] = eng.w(eng.season(daily_key=f"kc_{side}"))
     rows.append(_row("kc_fao56_table_range", "Kc", "documented_range",
                      "data/sensitivity_ranges.csv: FAO-56 Table 12 ranges (S065, S066, S069, S071, S072); "
-                     "Kc_end of rice, wheat, vegetables, grain_other and Kc_mid of oilseeds together", "real",
+                     "Kc_end of rice, wheat, vegetables, grain_other and Kc_mid of oilseeds together", "assumed",
                      "midpoint", "all low", "all high", w0, kc_w["low"], kc_w["high"], False, "all levels"))
 
     # Ветер NASA × 0.84 (ET0 и климатическая поправка Kc вместе), односторонне
