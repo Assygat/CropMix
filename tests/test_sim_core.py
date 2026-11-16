@@ -20,6 +20,20 @@ LEVELS = {"plant": "plant_m3_ha", "field": "field_m3_ha", "river": "river_m3_ha"
 
 pytestmark = pytest.mark.skipif(shutil.which("node") is None, reason="нужен Node.js")
 
+
+def require_outputs(*names):
+    """Путь к файлам outputs/ (их нет в Git, их создаёт python -m src.run_all).
+
+    Если какого-то файла нет — тест пропускается с объяснением (свежий клон до run_all); если файлы есть,
+    проверка идёт как обычно и ошибки внутри теста не скрываются.
+    """
+    paths = [ROOT / "outputs" / n for n in names]
+    missing = [p.name for p in paths if not p.is_file()]
+    if missing:
+        pytest.skip(f"Нет outputs/{', outputs/'.join(missing)}: outputs/ не хранится в Git — "
+                    "сначала выполните python -m src.run_all")
+    return paths[0] if len(paths) == 1 else paths
+
 NODE_EVAL = r"""
 const path = require("path"), fs = require("fs");
 const root = process.argv[1];
@@ -48,8 +62,9 @@ def js_results():
 
 @pytest.fixture(scope="module")
 def python_results():
+    l1_path = require_outputs("layer1_scenarios.csv")
     sim = json.loads((ROOT / "web" / "data" / "simulator.json").read_text(encoding="utf-8"))
-    l1 = pd.read_csv(ROOT / "outputs" / "layer1_scenarios.csv")
+    l1 = pd.read_csv(l1_path)
     l1["E"] = l1["eff_field_measure"] + "|" + l1["eff_canal_measure"] + "|" + l1["perc_measure"]
     by_year = l1.assign(C=l1["year"].astype(str))[["E", "C", "crop", *LEVELS.values()]]
     mean = l1.groupby(["E", "crop"], sort=False)[list(LEVELS.values())].mean().reset_index().assign(C="mean")
@@ -129,7 +144,7 @@ def test_saving_range_matches_python(python_results):
 
 def test_parity_with_python_optimizer_outputs(js_results):
     # Python LP (модуль 6): базовый и оптимальный забор при Cmean / E_base из optimizer_feasibility.csv
-    feas = pd.read_csv(ROOT / "outputs" / "optimizer_feasibility.csv").drop_duplicates("preset").set_index("preset")
+    feas = pd.read_csv(require_outputs("optimizer_feasibility.csv")).drop_duplicates("preset").set_index("preset")
     j = js_results[(js_results.climate == "mean") & (js_results.efficiency == "base|base|base")].set_index("set")
     for p in ("tight", "moderate", "flexible"):
         assert abs(j.loc[p, "river"] - feas.loc[p, "min_achievable_m3"] / 1e9) <= KM3_TOL

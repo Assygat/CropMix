@@ -11,22 +11,50 @@
 - Источники данных: [data/SOURCES.md](data/SOURCES.md)
 - Ограничения модели и данных: [docs/limitations.md](docs/limitations.md)
 
-## Установка (Windows)
+## Установка, пересчёт и тесты (Windows) — по порядку
 
-```
-py -3.14 -m venv .venv
-.venv\Scripts\python -m pip install -r requirements-lock.txt
-```
+Папка `outputs/` (результаты модулей 1–9, 15 CSV) **намеренно не хранится в Git** (`.gitignore`): её создаёт
+шаг 3. В свежем клоне её нет, поэтому тесты, сверяющие результаты, запускайте только после шага 3
+(без `outputs/` три таких теста в `tests/test_sim_core.py` пропускаются с подсказкой выполнить `run_all`).
+
+1. Создать и активировать виртуальное окружение:
+
+   ```
+   py -3.14 -m venv .venv
+   .venv\Scripts\activate
+   ```
+
+   (в PowerShell: `.venv\Scripts\Activate.ps1`). Команды ниже указывают `.venv\Scripts\python` явно и работают
+   и без активации.
+
+2. Установить зависимости из закреплённого набора:
+
+   ```
+   .venv\Scripts\python -m pip install -r requirements-lock.txt
+   ```
+
+3. Пересчитать модель — создаёт `outputs/` и обновляет `web/data/model.json`, `web/data/model.js`:
+
+   ```
+   .venv\Scripts\python -m src.run_all
+   ```
+
+4. Тесты Python (включают и JS-тесты, если установлен Node.js):
+
+   ```
+   .venv\Scripts\python -m pytest
+   ```
+
+5. Тесты Node отдельно (кавычки обязательны: шаблон раскрывает сам Node; форма с папкой `tests/js/` в Node 24
+   не работает):
+
+   ```
+   node --test "tests/js/*.test.js"
+   ```
 
 Проверено только на Windows 11 с CPython 3.14.2 (64-bit) и версиями из `requirements-lock.txt` (полный закреплённый
 набор, на нём получены `outputs/` и проходят все тесты). `requirements.txt` — прямые зависимости в тех же версиях.
 Другие версии Python и пакетов не проверялись. Для тестов симулятора нужен Node.js (проверено на v24.22.1).
-
-## Тесты
-
-```
-.venv\Scripts\python -m pytest
-```
 
 ## Симулятор структуры посевов
 
