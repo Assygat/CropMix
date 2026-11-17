@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>About — CropMix Twin</title>
+  <meta name="description" content="Why CropMix Twin exists: irrigated agriculture on the lower Syr Darya in Kyzylorda Region, Kazakhstan, the water question it raises, what the project does, what it cannot do yet, and who it is for.">
+  <meta name="theme-color" content="#061522">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+  <link rel="stylesheet" href="content.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav-wrap nav-wrap--sticky">
+    <nav class="nav glass" aria-label="Primary">
+      <a class="brand" href="index.html" aria-label="CropMix Twin home">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <defs>
+            <linearGradient id="bm" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#36B9D6"/><stop offset="1" stop-color="#007DFF"/>
+            </linearGradient>
+          </defs>
+          <path d="M16 3c4.6 6 9 10.6 9 16a9 9 0 1 1-18 0c0-5.4 4.4-10 9-16Z" fill="none" stroke="url(#bm)" stroke-width="2"/>
+          <path d="M9.6 20.5h12.8M10.5 24h11M16 13.5v13" stroke="url(#bm)" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        <span class="brand-word">CropMix<em>Twin</em></span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="simulator.html">Simulator</a></li>
+        <li><a href="planner.html">Decision Lab</a></li>
+        <li><a href="methodology.html">Methodology</a></li>
+        <li><a href="evidence.html">Data &amp; Evidence</a></li>
+        <li><a href="about.html" aria-current="page">About</a></li>
+      </ul>
+      <a class="nav-cta" href="simulator.html">Open Simulator
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 12 12 4M6 4h6v6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+        <span></span><span></span>
+      </button>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="page-head" aria-labelledby="page-title" style="--head-accent: rgba(6,59,206,.32)">
+      <p class="eyebrow"><span class="eyebrow-line"></span>About the project</p>
+      <h1 class="page-title" id="page-title">A river, a region and <em>a planning question</em>.</h1>
+      <p class="page-lede">Kyzylorda Region grows most of its crops on water diverted from the lower Syr Darya. Each
+        season, the water available and the crops sown have to be matched. CropMix Twin is an open, documented model that
+        shows how the choice of crops changes the amount of river water that matching requires.</p>
+    </section>
+
+    <section class="section section--navy" id="region" aria-labelledby="h-region">
+      <div class="about-grid">
+        <div class="prose">
+          <p class="eyebrow eyebrow-dark"><span class="eyebrow-line"></span>The region</p>
+          <h2 class="section-title" id="h-region">Fields along <em>the lower river</em></h2>
+          <p class="section-lede">Kyzylorda Region lies in the south of Kazakhstan, on the lower course of the Syr Darya
+            before it reaches the Aral Sea. Its climate is arid, with hot, dry and windy summers, and its farming depends on
+            irrigation from the river and its canal network.</p>
+          <p>Rice dominates the irrigated landscape. Between 2010 and 2025 the region sowed 74&#8239;000–91&#8239;000&nbsp;ha of
+            rice each year, alongside fodder crops, wheat, melons, vegetables, oilseeds, potato and other grains. In 2025 the
+            eight crop groups covered 188&#8239;094&nbsp;ha.</p>
+          <ul class="bignums">
+            <li><b>43<small>%</small></b><span>of the 2025 sown area was rice, the most water-demanding crop in the model.</span><p class="stat-src"><span class="tag tag-real">real</span>Bureau of National Statistics</p></li>
+            <li><b>37.2<small>km³</small></b><span>long-term mean annual runoff of the Syr Darya basin, formed upstream of the region.</span><p class="stat-src"><span class="tag tag-real">real</span>CAWater-Info</p></li>
+            <li><b>3.2<small>km³</small></b><span>irrigation limit for the region in 2026, after 3.7&nbsp;km³ in 2024.</span><p class="stat-src"><span class="tag tag-real">real</span>Regional news reports</p></li>
+          </ul>
+        </div>
+        <figure class="region-figure">
+          <svg id="region-svg" role="img" aria-labelledby="region-cap" viewBox="0 0 100 60"></svg>
+          <figcaption id="region-cap">Kyzylorda Region: seven districts and Kyzylorda City (2017 boundaries, simplified) and
+            the Syr Darya (generalised centreline). Boundaries © OpenStreetMap contributors via geoBoundaries, ODbL; river:
+            Natural Earth. For orientation only: the model has no district-level data and treats the region as one unit.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section section--glow" id="question" aria-labelledby="h-question">
+      <p class="eyebrow eyebrow-dark"><span class="eyebrow-line"></span>The water question</p>
+      <h2 class="section-title" id="h-question">Less water, <em>the same land</em>?</h2>
+      <div class="about-grid" style="margin-top: 28px">
+        <div class="prose">
+          <p>The water reaching Kyzylorda depends on runoff formed far upstream and on how it is shared along the basin. In
+            the five years with published yearbooks (2020–2024), basin runoff ranged from 32.1 to 42.0&nbsp;km³, between 0.86
+            and 1.13 of the long-term mean. The region’s irrigation limit fell from 3.7&nbsp;km³ in 2024 to 3.2&nbsp;km³ in 2026.</p>
+          <p>Allocations are set as seasonal volumes, while decisions about what to sow are made in spring, before the
+            season’s weather is known. Of the crops grown here, rice needs the most water per hectare. Losses
+            between the river and the field are thought to be large, although they have not been measured. The structure of
+            the crop mix and the efficiency of the network both shape how far a limited allocation goes.</p>
+          <p>Planners already weigh these factors. A model that sets them out in one place, with every assumption visible, can
+            help compare options consistently and show where the uncertainty lies.</p>
+        </div>
+        <div class="prose">
+          <p class="lead">The question CropMix Twin asks:</p>
+          <p class="note note--info"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 7v4M8 4.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span><strong>If the total sown area stays the same, how much river water could a different crop mix save, and how
+              does that compare with what efficiency, climate and sown area change?</strong></span></p>
+          <p>The answer so far, within the model: changing the mix alone saves 1.5–5.6&nbsp;% under average conditions; the
+            assumptions about canal and field efficiency move the result more than the crop structure does; and larger cuts
+            come mainly from sowing less. These are model results under stated assumptions. They are not measured savings.</p>
+          <p><a href="evidence.html#scenarios">See the scenarios and their ranges</a></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--deep" id="scope" aria-labelledby="h-scope">
+      <p class="eyebrow eyebrow-dark"><span class="eyebrow-line"></span>Scope</p>
+      <h2 class="section-title" id="h-scope">What it does, and <em>what it cannot do yet</em></h2>
+      <div class="split">
+        <div class="split-col is-yes">
+          <h3><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Does</h3>
+          <ul>
+            <li>Computes crop water demand day by day for eight crop groups from 16 years of climate (FAO-56).</li>
+            <li>Turns demand into water at the field and from the river under 36 efficiency scenarios.</li>
+            <li>Finds the crop mix with the least river withdrawal within set limits, and shows how the saving varies across 612 conditions.</li>
+            <li>Compares results with every official figure that could be found, and reports where they disagree.</li>
+            <li>Labels every input as observed, external, literature, assumed or modelled, and links it to a source.</li>
+            <li>Lets anyone test their own crop mix in the browser.</li>
+          </ul>
+        </div>
+        <div class="split-col is-no">
+          <h3><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Cannot yet</h3>
+          <ul>
+            <li>Reproduce measured withdrawal: the model is not validated, and its absolute volumes are about twice the official figures.</li>
+            <li>Say anything about individual districts, farms or fields.</li>
+            <li>Account for income, costs, markets, soils, salinity or rotations.</li>
+            <li>Forecast a coming season or the water that will be available.</li>
+            <li>Represent deficit irrigation, unirrigated sown area, leaching or drainage releases.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--glow" id="use" aria-labelledby="h-use">
+      <p class="eyebrow eyebrow-dark"><span class="eyebrow-line"></span>Who it is for</p>
+      <h2 class="section-title" id="h-use">A shared <em>reference</em> for planning talks</h2>
+      <ul class="cards cards-3">
+        <li class="card">
+          <h3>Water management specialists</h3>
+          <p>Compare the river withdrawal of different crop structures under the same climate and efficiency assumptions, and
+            see how much of a difference rests on the efficiency assumptions.</p>
+        </li>
+        <li class="card">
+          <h3>Regional administration</h3>
+          <p>Discuss crop-structure targets against seasonal limits with explicit ranges instead of single numbers, and see
+            which data gaps matter most.</p>
+        </li>
+        <li class="card">
+          <h3>Agricultural cooperatives</h3>
+          <p>Understand why rice dominates the regional water balance and what shifting part of the area to other crops
+            changes, and what it does not.</p>
+        </li>
+      </ul>
+      <div class="prose" style="margin-top: 40px">
+        <h3>What would improve the model most</h3>
+        <p>The sensitivity analysis and the backtest point to the same gaps. The most valuable additions would be measured
+          canal and field efficiencies; the irrigated (not only sown) area by crop; a multi-year series of actual withdrawal
+          for the region; local crop calendars and the composition of the fodder group; and costs and prices, so that income
+          can be weighed against water.</p>
+      </div>
+    </section>
+
+    <section class="section section--deep" id="project" aria-labelledby="h-project">
+      <p class="eyebrow eyebrow-dark"><span class="eyebrow-line"></span>The project</p>
+      <h2 class="section-title" id="h-project">Open, documented, <em>reproducible</em></h2>
+      <div class="about-grid" style="margin-top: 28px">
+        <div class="prose">
+          <p>CropMix Twin is a student project for the Xylem Global Student Innovation Challenge 2026 (Water Quantity track).
+            It was built in layers. Crop water demand came first; losses, water-year scenarios, the optimiser, the backtest
+            and the sensitivity analysis were each added on top only after the previous layer was tested.</p>
+          <p>The calculation is written in Python (pandas, NumPy, SciPy); the website is plain HTML, CSS and JavaScript with no
+            framework, and works offline. Two commands rebuild every result and the website data from the data files, and automated tests check
+            the equations against FAO-56 worked examples and check that the browser reproduces the Python results.</p>
+        </div>
+        <div class="prose">
+          <p class="lead">Everything is public:</p>
+          <ul>
+            <li>source code and data: <a href="https://github.com/Assygat/CropMix">github.com/Assygat/CropMix</a>;</li>
+            <li>source register with quotations: <code>data/SOURCES.md</code>;</li>
+            <li>limitations, updated with each module: <code>docs/limitations.md</code>;</li>
+            <li>backtest and sensitivity reports: <code>docs/backtest.md</code>, <code>docs/sensitivity.md</code>.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="next-links">
+        <a class="next-link" href="simulator.html"><span>Try it</span><b>Simulator</b><p>Build a crop mix and compare it with the optimised ones.</p></a>
+        <a class="next-link" href="methodology.html"><span>Method</span><b>Methodology</b><p>Equations, parameters and assumptions.</p></a>
+        <a class="next-link" href="evidence.html"><span>Evidence</span><b>Data &amp; Evidence</b><p>Sources, backtest and sensitivity.</p></a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="index.html" aria-label="CropMix Twin home">
+          <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M16 3c4.6 6 9 10.6 9 16a9 9 0 1 1-18 0c0-5.4 4.4-10 9-16Z" fill="none" stroke="url(#bm)" stroke-width="2"/>
+            <path d="M9.6 20.5h12.8M10.5 24h11M16 13.5v13" stroke="url(#bm)" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+          <span class="brand-word">CropMix<em>Twin</em></span>
+        </a>
+        <p>A planning model of irrigation water use for Kyzylorda Region, Kazakhstan. Planning model, not a field
+          measurement; not validated against observations.</p>
+      </div>
+      <nav aria-label="Footer">
+        <p class="footer-title">Pages</p>
+        <ul class="footer-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="simulator.html">Simulator</a></li>
+          <li><a href="planner.html">Decision Lab</a></li>
+          <li><a href="methodology.html">Methodology</a></li>
+          <li><a href="evidence.html">Data &amp; Evidence</a></li>
+          <li><a href="about.html">About</a></li>
+        </ul>
+      </nav>
+      <div>
+        <p class="footer-title">Data</p>
+        <p class="footer-small">Climate: NASA POWER. Crop coefficients: FAO-56 (Allen et al., 1998). Crop areas: Bureau of
+          National Statistics of Kazakhstan. Runoff: CAWater-Info yearbooks.</p>
+        <p class="footer-small">Map: © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> via
+          geoBoundaries, <a href="https://opendatacommons.org/licenses/odbl/1-0/">ODbL 1.0</a>; river: Natural Earth.</p>
+      </div>
+    </div>
+    <div class="footer-base">
+      <p class="footer-small">Xylem Global Student Innovation Challenge 2026 · Water Quantity track</p>
+      <p class="footer-small"><a href="https://github.com/Assygat/CropMix">Source code and data on GitHub</a></p>
+    </div>
+  </footer>
+
+  <script src="data/geo.js"></script>
+  <script src="sim_map.js"></script>
+  <script src="data_views.js"></script>
+  <script src="site.js"></script>
+</body>
+</html>

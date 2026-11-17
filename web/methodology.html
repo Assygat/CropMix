@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Methodology — CropMix Twin</title>
+  <meta name="description" content="How CropMix Twin computes irrigation water use for Kyzylorda Region: FAO-56 Penman–Monteith ET0, crop coefficients, effective rainfall, rice flooding, field and canal efficiencies, and the crop-mix optimiser.">
+  <meta name="theme-color" content="#061522">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+  <link rel="stylesheet" href="content.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav-wrap nav-wrap--sticky">
+    <nav class="nav glass" aria-label="Primary">
+      <a class="brand" href="index.html" aria-label="CropMix Twin home">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <defs>
+            <linearGradient id="bm" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#36B9D6"/><stop offset="1" stop-color="#007DFF"/>
+            </linearGradient>
+          </defs>
+          <path d="M16 3c4.6 6 9 10.6 9 16a9 9 0 1 1-18 0c0-5.4 4.4-10 9-16Z" fill="none" stroke="url(#bm)" stroke-width="2"/>
+          <path d="M9.6 20.5h12.8M10.5 24h11M16 13.5v13" stroke="url(#bm)" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        <span class="brand-word">CropMix<em>Twin</em></span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="simulator.html">Simulator</a></li>
+        <li><a href="planner.html">Decision Lab</a></li>
+        <li><a href="methodology.html" aria-current="page">Methodology</a></li>
+        <li><a href="evidence.html">Data &amp; Evidence</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+      <a class="nav-cta" href="simulator.html">Open Simulator
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 12 12 4M6 4h6v6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+        <span></span><span></span>
+      </button>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="page-head" aria-labelledby="page-title">
+      <p class="eyebrow"><span class="eyebrow-line"></span>Methodology</p>
+      <h1 class="page-title" id="page-title">From daily weather <em>to river water</em>.</h1>
+      <p class="page-lede">CropMix Twin follows the FAO-56 crop water method day by day, adds the losses between the
+        river and the plant, and sums the result over the region’s crop areas. This page sets out each step, the equations
+        behind it and the assumptions it rests on.</p>
+      <ul class="page-meta" aria-label="Method at a glance">
+        <li><strong>FAO-56</strong> Penman–Monteith</li>
+        <li><strong>Daily</strong> time step, 2010–2025</li>
+        <li><strong>8</strong> crop groups</li>
+        <li><strong>36</strong> efficiency scenarios</li>
+        <li><strong>Linear programming</strong> optimiser</li>
+      </ul>
+    </section>
+
+    <div class="doc">
+      <nav class="toc" aria-label="On this page">
+        <p class="toc-title">On this page</p>
+        <ol>
+          <li><a href="#architecture">Model architecture</a></li>
+          <li><a href="#units">Variables and units</a></li>
+          <li><a href="#et0">Reference evapotranspiration</a></li>
+          <li><a href="#kc">Crop coefficients</a></li>
+          <li><a href="#etc">Crop water demand</a></li>
+          <li><a href="#rainfall">Effective rainfall</a></li>
+          <li><a href="#losses">Field and canal losses</a></li>
+          <li><a href="#rice">Rice and percolation</a></li>
+          <li><a href="#regional">Regional water use</a></li>
+          <li><a href="#optimiser">Crop-mix optimiser</a></li>
+          <li><a href="#evaluation">Baseline vs optimised</a></li>
+          <li><a href="#water-years">Water-year classes</a></li>
+          <li><a href="#scope">What the method is not</a></li>
+        </ol>
+      </nav>
+
+      <div class="doc-body prose">
+
+        <!-- 01 -->
+        <section class="doc-section" id="architecture" aria-labelledby="h-architecture">
+          <span class="sec-no">01</span>
+          <h2 id="h-architecture">Model <em>architecture</em></h2>
+          <p class="lead">The model answers one planning question: for a given crop mix, how much water has to be taken
+            from the Syr Darya to meet the crops’ demand, and how would a different mix change that amount?</p>
+          <ol class="flow" aria-label="Calculation chain">
+            <li><strong>Daily climate</strong><span>Temperature, humidity, wind and radiation, 2010–2025.</span><small>NASA POWER</small></li>
+            <li><strong>Reference ET₀</strong><span>Evaporative demand of a standard grass surface.</span><small>FAO-56 Eq. 6</small></li>
+            <li><strong>Crop demand ETc</strong><span>ET₀ scaled by a crop coefficient for each day of the season.</span><small>ETc = ET₀ × Kc</small></li>
+            <li><strong>Field and river</strong><span>Effective rainfall, field losses, canal losses; flooding for rice.</span><small>36 scenarios</small></li>
+            <li><strong>Region and optimiser</strong><span>Coefficients × crop areas; least-water crop mix.</span><small>Linear programming</small></li>
+          </ol>
+          <p>Steps 1–4 run in Python (<code>src/</code>) for every crop, year and efficiency scenario. They produce seasonal
+            coefficients in cubic metres per hectare. The website and the simulator do not repeat these calculations:
+            they only multiply the published coefficients by crop areas. The browser code and the Python results agree
+            to within 10<sup>−12</sup>&nbsp;km³, which an automated test checks for every scenario.</p>
+          <p>Each modelled volume is written <strong>W(A, C, E)</strong>: the crop areas of year A, the climate of year C
+            (or Cmean, defined below) and an efficiency scenario E. Naming all three keeps comparisons honest. A 2024 result,
+            for example, uses the areas and the climate of 2024.</p>
+        </section>
+
+        <!-- 02 -->
+        <section class="doc-section" id="units" aria-labelledby="h-units">
+          <span class="sec-no">02</span>
+          <h2 id="h-units">Variables and <em>units</em></h2>
+          <p>Water is handled as a depth (millimetres) while it is computed per crop and as a volume (cubic metres) once it
+            is attached to an area. One millimetre of water over one hectare is ten cubic metres.</p>
+          <div class="formula" role="group" aria-label="Unit conversion">
+            <p class="formula-head"><span>Unit conversion</span><span>used for every coefficient</span></p>
+            <math display="block">
+              <mrow><mn>1</mn><mo>&#8202;</mo><mi mathvariant="normal">mm</mi><mo>×</mo><mn>1</mn><mo>&#8202;</mo><mi mathvariant="normal">ha</mi>
+                <mo>=</mo><mn>0.001</mn><mo>&#8202;</mo><mi mathvariant="normal">m</mi><mo>×</mo><mn>10&#8239;000</mn><mo>&#8202;</mo><msup><mi mathvariant="normal">m</mi><mn>2</mn></msup>
+                <mo>=</mo><mn>10</mn><mo>&#8202;</mo><msup><mi mathvariant="normal">m</mi><mn>3</mn></msup>
+                <mspace width="1.2em"/><mo>;</mo><mspace width="1.2em"/>
+                <mn>1</mn><mo>&#8202;</mo><msup><mi>km</mi><mn>3</mn></msup><mo>=</mo><msup><mn>10</mn><mn>9</mn></msup><mo>&#8202;</mo><msup><mi mathvariant="normal">m</mi><mn>3</mn></msup></mrow>
+            </math>
+          </div>
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Variables and units">
+            <table class="data">
+              <caption>Symbols used on this page</caption>
+              <thead><tr><th scope="col">Symbol</th><th scope="col">Meaning</th><th scope="col">Unit</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">ET₀</th><td>Reference evapotranspiration (grass surface)</td><td>mm/day</td></tr>
+                <tr><th scope="row">Kc</th><td>Crop coefficient</td><td>—</td></tr>
+                <tr><th scope="row">ETc</th><td>Crop evapotranspiration: water used by the crop</td><td>mm</td></tr>
+                <tr><th scope="row">P, Pe</th><td>Monthly precipitation and its effective part</td><td>mm/month</td></tr>
+                <tr><th scope="row">NIR</th><td>Net irrigation requirement (“crop need”)</td><td>mm per season</td></tr>
+                <tr><th scope="row">η<sub>f</sub>, η<sub>c</sub></th><td>Field application and canal conveyance efficiency</td><td>fraction</td></tr>
+                <tr><th scope="row">SAT, WL, PERC</th><td>Rice: soil saturation, standing water layer, percolation</td><td>mm, mm, mm/day</td></tr>
+                <tr><th scope="row">A<sub>c</sub></th><td>Sown area of crop group c</td><td>ha</td></tr>
+                <tr><th scope="row">k<sub>c</sub></th><td>Seasonal water coefficient of crop group c at one level</td><td>m³/ha</td></tr>
+                <tr><th scope="row">W</th><td>Regional water volume at one level</td><td>km³</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Three levels are reported throughout: <strong>crop need</strong> (water the crop must receive beyond rainfall),
+            <strong>at the field</strong> (water applied, including field losses) and <strong>river withdrawal</strong>
+            (water diverted from the river, including canal losses).</p>
+        </section>
+
+        <!-- 03 -->
+        <section class="doc-section" id="et0" aria-labelledby="h-et0">
+          <span class="sec-no">03</span>
+          <h2 id="h-et0">Reference <em>evapotranspiration</em></h2>
+          <p>ET₀ is the evaporative demand of a well-watered reference grass. CropMix Twin computes it every day with the
+            FAO-56 Penman–Monteith equation (Allen et al., 1998).</p>
+          <div class="formula" role="group" aria-label="FAO-56 Penman–Monteith equation">
+            <p class="formula-head"><span>FAO-56 Penman–Monteith</span><span>Eq. 6, daily time step</span></p>
+            <math display="block">
+              <mrow>
+                <msub><mi>ET</mi><mn>0</mn></msub><mo>=</mo>
+                <mfrac>
+                  <mrow><mn>0.408</mn><mo>&#8290;</mo><mi mathvariant="normal">Δ</mi><mo>&#8290;</mo><mo>(</mo><msub><mi>R</mi><mi>n</mi></msub><mo>−</mo><mi>G</mi><mo>)</mo>
+                    <mo>+</mo><mi>γ</mi><mo>&#8290;</mo><mfrac><mn>900</mn><mrow><mi>T</mi><mo>+</mo><mn>273</mn></mrow></mfrac><mo>&#8290;</mo><msub><mi>u</mi><mn>2</mn></msub><mo>&#8290;</mo><mo>(</mo><msub><mi>e</mi><mi>s</mi></msub><mo>−</mo><msub><mi>e</mi><mi>a</mi></msub><mo>)</mo></mrow>
+                  <mrow><mi mathvariant="normal">Δ</mi><mo>+</mo><mi>γ</mi><mo>&#8290;</mo><mo>(</mo><mn>1</mn><mo>+</mo><mn>0.34</mn><mo>&#8290;</mo><msub><mi>u</mi><mn>2</mn></msub><mo>)</mo></mrow>
+                </mfrac>
+              </mrow>
+            </math>
+            <dl class="vars">
+              <dt><math><msub><mi>R</mi><mi>n</mi></msub></math></dt><dd>net radiation at the surface, MJ m⁻² day⁻¹ (from incoming solar radiation, albedo 0.23 and net long-wave radiation, Eq. 38–39)</dd>
+              <dt><math><mi>G</mi></math></dt><dd>soil heat flux; taken as 0 for a daily step (Eq. 42)</dd>
+              <dt><math><mi>T</mi></math></dt><dd>mean daily air temperature at 2 m, °C</dd>
+              <dt><math><msub><mi>u</mi><mn>2</mn></msub></math></dt><dd>wind speed at 2 m, m s⁻¹</dd>
+              <dt><math><mrow><msub><mi>e</mi><mi>s</mi></msub><mo>−</mo><msub><mi>e</mi><mi>a</mi></msub></mrow></math></dt><dd>vapour pressure deficit, kPa (e<sub>a</sub> from mean relative humidity, Eq. 19)</dd>
+              <dt><math><mi mathvariant="normal">Δ</mi><mo>,</mo><mi>γ</mi></math></dt><dd>slope of the vapour pressure curve and psychrometric constant, kPa °C⁻¹ (Eq. 13 and 8)</dd>
+            </dl>
+          </div>
+          <p>The weather comes from NASA POWER for the grid point 44.8°&nbsp;N, 65.5°&nbsp;E (elevation 122&nbsp;m), next to
+            Kyzylorda. NASA POWER is a gridded product built from the MERRA-2 reanalysis and the CERES satellite product,
+            covering a 0.5°&nbsp;×&nbsp;0.625° cell. It is not a station record. For a cross-check, temperatures were
+            compared with the Kyzylorda weather station (GSOD 38062). In April–October, NASA daily maximum temperature runs
+            1.2&nbsp;°C lower and minimum temperature 1.7&nbsp;°C higher than the station, and NASA wind is about 16&nbsp;%
+            stronger than the station estimate. The model is not corrected for these differences. The wind effect is
+            tested in the sensitivity analysis instead (see <a href="evidence.html#sensitivity">Data &amp; Evidence</a>).</p>
+          <p>Two simplifications follow FAO-56 guidance. Humidity is available only as a daily mean, so actual vapour
+            pressure uses Eq. 19, which FAO-56 rates as less accurate than Eq. 17. Negative winter values of ET₀ are set
+            to zero.</p>
+        </section>
+
+        <!-- 04 -->
+        <section class="doc-section" id="kc" aria-labelledby="h-kc">
+          <span class="sec-no">04</span>
+          <h2 id="h-kc">Crop coefficients and <em>four growth stages</em></h2>
+          <p>A crop uses more or less water than reference grass depending on its stage of growth. FAO-56 describes the
+            season with four stages: initial, development, mid-season and late season. The crop coefficient is constant in
+            the initial and mid-season stages and changes linearly in between (FAO-56 Eq. 66).</p>
+          <div class="formula" role="group" aria-label="Crop coefficient curve">
+            <p class="formula-head"><span>Crop coefficient on day i</span><span>FAO-56 Eq. 66</span></p>
+            <math display="block">
+              <mrow>
+                <msub><mi>K</mi><mrow><mi>c</mi><mo>,</mo><mi>i</mi></mrow></msub><mo>=</mo>
+                <mrow><mo>{</mo>
+                  <mtable class="m-cases" displaystyle="true">
+                    <mtr><mtd><msub><mi>K</mi><mi>ini</mi></msub></mtd><mtd><mtext>initial stage</mtext></mtd></mtr>
+                    <mtr><mtd><mrow><msub><mi>K</mi><mi>ini</mi></msub><mo>+</mo><mfrac><mrow><mi>i</mi><mo>−</mo><msub><mi>L</mi><mi>ini</mi></msub></mrow><msub><mi>L</mi><mi>dev</mi></msub></mfrac><mo>&#8290;</mo><mo>(</mo><msub><mi>K</mi><mi>mid</mi></msub><mo>−</mo><msub><mi>K</mi><mi>ini</mi></msub><mo>)</mo></mrow></mtd><mtd><mtext>development</mtext></mtd></mtr>
+                    <mtr><mtd><msub><mi>K</mi><mi>mid</mi></msub></mtd><mtd><mtext>mid-season</mtext></mtd></mtr>
+                    <mtr><mtd><mrow><msub><mi>K</mi><mi>mid</mi></msub><mo>+</mo><mfrac><mrow><mi>i</mi><mo>−</mo><msub><mi>L</mi><mrow><mi>ini</mi><mo>+</mo><mi>dev</mi><mo>+</mo><mi>mid</mi></mrow></msub></mrow><msub><mi>L</mi><mi>late</mi></msub></mfrac><mo>&#8290;</mo><mo>(</mo><msub><mi>K</mi><mi>end</mi></msub><mo>−</mo><msub><mi>K</mi><mi>mid</mi></msub><mo>)</mo></mrow></mtd><mtd><mtext>late season</mtext></mtd></mtr>
+                  </mtable>
+                </mrow>
+              </mrow>
+            </math>
+            <p class="formula-note">L denotes stage lengths in days; subscripts with + are cumulative lengths.</p>
+          </div>
+          <p>The tabulated mid- and end-season values are for a sub-humid climate. Kyzylorda is drier and windier, so they
+            are adjusted every year with the mean wind and minimum humidity of that stage (FAO-56 Eq. 62 and 65). The
+            end-season value is adjusted only when it is at least 0.45.</p>
+          <div class="formula" role="group" aria-label="Climate adjustment of the crop coefficient">
+            <p class="formula-head"><span>Climate adjustment</span><span>FAO-56 Eq. 62 (mid) and 65 (end)</span></p>
+            <math display="block">
+              <mrow><msub><mi>K</mi><mi>mid</mi></msub><mo>=</mo><msub><mi>K</mi><mrow><mi>mid</mi><mo>(</mo><mi>Tab</mi><mo>)</mo></mrow></msub>
+                <mo>+</mo><mrow><mo>[</mo><mn>0.04</mn><mo>&#8290;</mo><mo>(</mo><msub><mi>u</mi><mn>2</mn></msub><mo>−</mo><mn>2</mn><mo>)</mo><mo>−</mo><mn>0.004</mn><mo>&#8290;</mo><mo>(</mo><msub><mi>RH</mi><mi>min</mi></msub><mo>−</mo><mn>45</mn><mo>)</mo><mo>]</mo></mrow>
+                <mo>&#8290;</mo><msup><mrow><mo>(</mo><mfrac><mi>h</mi><mn>3</mn></mfrac><mo>)</mo></mrow><mn>0.3</mn></msup></mrow>
+            </math>
+            <dl class="vars">
+              <dt><math><msub><mi>RH</mi><mi>min</mi></msub></math></dt><dd>minimum relative humidity, %, estimated as e<sub>a</sub> / e°(T<sub>max</sub>) × 100 and limited to 20–80 %</dd>
+              <dt><math><msub><mi>u</mi><mn>2</mn></msub></math></dt><dd>mean wind speed of the stage, limited to 1–6 m s⁻¹</dd>
+              <dt><math><mi>h</mi></math></dt><dd>mean maximum crop height, m</dd>
+            </dl>
+            <p class="formula-note">With NASA POWER mid-season wind of about 3.3–3.6 m s⁻¹ and RH<sub>min</sub> of 19–23 %, the adjustment raises K<sub>mid</sub> by 0.07–0.15.</p>
+          </div>
+          <p>All coefficients, stage lengths and sowing dates are values from FAO-56 Tables 11 and 12 applied to Kyzylorda
+            Region. They are literature parameters, recorded with status <span class="tag tag-assumed">assumed</span>, not
+            local measurements. Where a crop group has no row of its own, a proxy crop describes it.</p>
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Crop parameters">
+            <table class="data">
+              <caption>Crop parameters (FAO-56 Tables 11–12, applied to the region)
+                <small>Stage lengths: initial – development – mid-season – late, days. All values have status assumed.</small></caption>
+              <thead><tr><th scope="col">Crop group</th><th scope="col">Described by</th><th scope="col" class="num">K<sub>ini</sub></th><th scope="col" class="num">K<sub>mid</sub></th><th scope="col" class="num">K<sub>end</sub></th><th scope="col">Stages, days</th><th scope="col">Sowing</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Rice</th><td>rice</td><td class="num">1.05</td><td class="num">1.20</td><td class="num">0.75</td><td>30–30–60–30</td><td>15 May</td></tr>
+                <tr><th scope="row">Wheat</th><td>spring wheat</td><td class="num">0.30</td><td class="num">1.15</td><td class="num">0.325</td><td>20–25–60–30</td><td>15 March</td></tr>
+                <tr><th scope="row">Potato</th><td>potato</td><td class="num">0.50</td><td class="num">1.15</td><td class="num">0.75</td><td>25–30–45–30</td><td>15 May</td></tr>
+                <tr><th scope="row">Fodder crops</th><td>alfalfa (whole group)</td><td class="num">0.40</td><td class="num">0.95</td><td class="num">0.90</td><td>10–30–rest–30</td><td>after last −4&nbsp;°C frost</td></tr>
+                <tr><th scope="row">Open-field vegetables</th><td>tomato</td><td class="num">0.60</td><td class="num">1.15</td><td class="num">0.80</td><td>30–40–45–30</td><td>1 May</td></tr>
+                <tr><th scope="row">Melons</th><td>melon</td><td class="num">0.50</td><td class="num">1.05</td><td class="num">0.75</td><td>25–35–40–20</td><td>15 May</td></tr>
+                <tr><th scope="row">Oilseeds</th><td>safflower</td><td class="num">0.35</td><td class="num">1.075</td><td class="num">0.25</td><td>20–35–45–25</td><td>15 April</td></tr>
+                <tr><th scope="row">Other grains</th><td>grain maize</td><td class="num">0.30</td><td class="num">1.20</td><td class="num">0.475</td><td>30–40–50–30</td><td>15 April</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-note">The fodder season runs from the day after the last spring frost of −4&nbsp;°C to the day
+            before the first autumn frost, computed each year from NASA POWER minimum temperature (194–247 days in
+            2010–2025). Sowing dates are fixed calendar dates in every year.</p>
+        </section>
+
+        <!-- 05 -->
+        <section class="doc-section" id="etc" aria-labelledby="h-etc">
+          <span class="sec-no">05</span>
+          <h2 id="h-etc">Crop water <em>demand</em></h2>
+          <div class="formula" role="group" aria-label="Crop evapotranspiration">
+            <p class="formula-head"><span>Crop evapotranspiration over the season</span><span>FAO-56 Eq. 56, summed daily</span></p>
+            <math display="block">
+              <mrow><msub><mi>ET</mi><mi>c</mi></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>L</mi></munderover>
+                <msub><mi>ET</mi><mrow><mn>0</mn><mo>,</mo><mi>i</mi></mrow></msub><mo>&#8290;</mo><msub><mi>K</mi><mrow><mi>c</mi><mo>,</mo><mi>i</mi></mrow></msub></mrow>
+            </math>
+            <p class="formula-note">L is the season length in days; ET₀ and Kc are taken for the same calendar day.</p>
+          </div>
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Seasonal crop evapotranspiration">
+            <table class="data">
+              <caption>Seasonal crop evapotranspiration, mean 2010–2025<small>Modelled; from outputs/etc_season.csv.</small></caption>
+              <thead><tr><th scope="col">Crop group</th><th scope="col" class="num">Season, days</th><th scope="col" class="num">ET<sub>c</sub>, mm</th><th scope="col" class="num">ET<sub>c</sub>, m³/ha</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Fodder crops</th><td class="num">223</td><td class="num">1&#8239;408</td><td class="num">14&#8239;077</td></tr>
+                <tr><th scope="row">Rice</th><td class="num">150</td><td class="num">1&#8239;343</td><td class="num">13&#8239;431</td></tr>
+                <tr><th scope="row">Open-field vegetables</th><td class="num">145</td><td class="num">1&#8239;140</td><td class="num">11&#8239;402</td></tr>
+                <tr><th scope="row">Other grains</th><td class="num">150</td><td class="num">1&#8239;136</td><td class="num">11&#8239;363</td></tr>
+                <tr><th scope="row">Potato</th><td class="num">130</td><td class="num">1&#8239;018</td><td class="num">10&#8239;181</td></tr>
+                <tr><th scope="row">Wheat</th><td class="num">135</td><td class="num">906</td><td class="num">9&#8239;057</td></tr>
+                <tr><th scope="row">Melons</th><td class="num">120</td><td class="num">880</td><td class="num">8&#8239;803</td></tr>
+                <tr><th scope="row">Oilseeds</th><td class="num">125</td><td class="num">871</td><td class="num">8&#8239;706</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>For rice, the modelled 13&#8239;431&nbsp;m³/ha (12&#8239;274–14&#8239;258 across years) is 1.22–1.34 times the
+            10&#8239;000–11&#8239;000&nbsp;m³/ha reported in the regional literature for Central Asia. It should be read as an
+            upper estimate. Likely contributors are the stronger NASA wind, the climate adjustment of K<sub>c</sub> in dry,
+            windy air, and a fixed 150-day calendar.</p>
+        </section>
+
+        <!-- 06 -->
+        <section class="doc-section" id="rainfall" aria-labelledby="h-rainfall">
+          <span class="sec-no">06</span>
+          <h2 id="h-rainfall">Effective <em>rainfall</em></h2>
+          <p>Only part of the rain that falls during the season can be used by the crop. Effective rainfall is estimated
+            from monthly totals with the USDA Soil Conservation Service formula.</p>
+          <div class="formula" role="group" aria-label="USDA SCS effective rainfall">
+            <p class="formula-head"><span>Effective rainfall, USDA SCS</span><span>monthly, mm</span></p>
+            <math display="block">
+              <mrow><msub><mi>P</mi><mi>e</mi></msub><mo>=</mo>
+                <mrow><mo>{</mo>
+                  <mtable class="m-cases" displaystyle="true">
+                    <mtr><mtd><mfrac><mrow><mi>P</mi><mo>&#8290;</mo><mo>(</mo><mn>125</mn><mo>−</mo><mn>0.2</mn><mo>&#8290;</mo><mi>P</mi><mo>)</mo></mrow><mn>125</mn></mfrac></mtd><mtd><mrow><mi>P</mi><mo>&lt;</mo><mn>250</mn><mtext>&#8194;mm/month</mtext></mrow></mtd></mtr>
+                    <mtr><mtd><mrow><mn>125</mn><mo>+</mo><mn>0.1</mn><mo>&#8290;</mo><mi>P</mi></mrow></mtd><mtd><mrow><mi>P</mi><mo>≥</mo><mn>250</mn><mtext>&#8194;mm/month</mtext></mrow></mtd></mtr>
+                  </mtable>
+                </mrow>
+              </mrow>
+            </math>
+            <p class="formula-note">P is the total for the whole calendar month; when the season covers part of a month, P<sub>e</sub> is prorated by the number of season days in it.</p>
+          </div>
+          <p>Rainfall barely matters here. NASA POWER gives about 51&nbsp;mm for April–October, and effective rainfall is
+            1.7–5.1&nbsp;% of seasonal crop demand. The precipitation series cannot be checked against the local station,
+            whose daily rainfall reports are almost entirely missing.</p>
+        </section>
+
+        <!-- 07 -->
+        <section class="doc-section" id="losses" aria-labelledby="h-losses">
+          <span class="sec-no">07</span>
+          <h2 id="h-losses">Field and <em>canal losses</em></h2>
+          <p>For every crop except rice, the season is balanced month by month. The net irrigation requirement is the crop
+            demand not covered by effective rainfall. Field losses and canal losses then scale it up to the water applied at
+            the field and the water taken from the river.</p>
+          <div class="formula" role="group" aria-label="Three water levels">
+            <p class="formula-head"><span>Three water levels, per hectare</span><span>FAO Training Manual 3, §4.3</span></p>
+            <math display="block">
+              <mtable class="m-rows" displaystyle="true">
+                <mtr><mtd><mi>NIR</mi></mtd><mtd><mrow><mo>=</mo><munder><mo>∑</mo><mi>m</mi></munder><mi>max</mi><mo>&#8289;</mo><mo>(</mo><msub><mi>ET</mi><mrow><mi>c</mi><mo>,</mo><mi>m</mi></mrow></msub><mo>−</mo><msub><mi>P</mi><mrow><mi>e</mi><mo>,</mo><mi>m</mi></mrow></msub><mo>,</mo><mspace width="0.2em"/><mn>0</mn><mo>)</mo></mrow></mtd></mtr>
+                <mtr><mtd><msub><mi>W</mi><mi>field</mi></msub></mtd><mtd><mrow><mo>=</mo><mfrac><mi>NIR</mi><msub><mi>η</mi><mi>f</mi></msub></mfrac></mrow></mtd></mtr>
+                <mtr><mtd><msub><mi>W</mi><mi>river</mi></msub></mtd><mtd><mrow><mo>=</mo><mfrac><msub><mi>W</mi><mi>field</mi></msub><msub><mi>η</mi><mi>c</mi></msub></mfrac></mrow></mtd></mtr>
+              </mtable>
+            </math>
+            <p class="formula-note">m runs over the months of the season. Each depth in mm becomes a coefficient in m³/ha by the factor 10.</p>
+          </div>
+          <p>No measured canal or field efficiencies were found for Kyzylorda Region, so both are scenario assumptions. The
+            base values come from FAO guidance for long earth canals and surface irrigation; the ranges span the plausible
+            alternatives. A pessimistic canal efficiency of 0.40 is included as a scenario because a public statement by a
+            senator on regional water losses implies 0.39–0.50. It is a stress test, not a measured value.</p>
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Efficiency scenarios">
+            <table class="data">
+              <caption>Efficiency and percolation levels<small>All values have status assumed. 3 × 4 × 3 = 36 scenarios; E<sub>base</sub> = 0.60 / 0.575 / 6&nbsp;mm/day.</small></caption>
+              <thead><tr><th scope="col">Parameter</th><th scope="col" class="num">Pessimistic</th><th scope="col" class="num">Low</th><th scope="col" class="num">Base</th><th scope="col" class="num">High</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Field application efficiency η<sub>f</sub></th><td class="num">—</td><td class="num">0.50</td><td class="num">0.60</td><td class="num">0.70</td></tr>
+                <tr><th scope="row">Canal conveyance efficiency η<sub>c</sub></th><td class="num">0.40</td><td class="num">0.50</td><td class="num">0.575</td><td class="num">0.65</td></tr>
+                <tr><th scope="row">Rice percolation, mm/day</th><td class="num">—</td><td class="num">4</td><td class="num">6</td><td class="num">8</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Together, η<sub>f</sub> × η<sub>c</sub> ranges from 0.25 to 0.455 in the agreed range (0.20 with the
+            pessimistic canal level). River withdrawal is therefore 2.2–4.0 times the crop need for non-rice crops (up to
+            5.0 times), from efficiency assumptions alone.</p>
+        </section>
+
+        <!-- 08 -->
+        <section class="doc-section" id="rice" aria-labelledby="h-rice">
+          <span class="sec-no">08</span>
+          <h2 id="h-rice">Rice, flooding and <em>percolation</em></h2>
+          <p>Rice is grown in flooded basins. Before planting, the soil is saturated and a standing layer of water is
+            established; during the season, water drains through the soil (percolation and seepage). Following FAO
+            Training Manual 3 (§4.4), the water needed at the field is:</p>
+          <div class="formula" role="group" aria-label="Rice field water">
+            <p class="formula-head"><span>Rice: water at the field</span><span>FAO Training Manual 3, §4.4</span></p>
+            <math display="block">
+              <mrow><msubsup><mi>W</mi><mi>field</mi><mi>rice</mi></msubsup><mo>=</mo><munder><mo>∑</mo><mi>m</mi></munder><mi>max</mi><mo>&#8289;</mo>
+                <mo>(</mo><msub><mi>ET</mi><mrow><mi>c</mi><mo>,</mo><mi>m</mi></mrow></msub><mo>+</mo><msub><mi>SAT</mi><mi>m</mi></msub><mo>+</mo><msub><mi>WL</mi><mi>m</mi></msub>
+                <mo>+</mo><mi>PERC</mi><mo>&#8290;</mo><msub><mi>d</mi><mi>m</mi></msub><mo>−</mo><msub><mi>P</mi><mrow><mi>e</mi><mo>,</mo><mi>m</mi></mrow></msub><mo>,</mo><mspace width="0.2em"/><mn>0</mn><mo>)</mo>
+                <mspace width="1em"/><mo>,</mo><mspace width="1em"/>
+                <msubsup><mi>W</mi><mi>river</mi><mi>rice</mi></msubsup><mo>=</mo><mfrac><msubsup><mi>W</mi><mi>field</mi><mi>rice</mi></msubsup><msub><mi>η</mi><mi>c</mi></msub></mfrac></mrow>
+            </math>
+            <dl class="vars">
+              <dt><math><mi>SAT</mi></math></dt><dd>soil saturation before planting: 200 mm, once, in the first month of the season</dd>
+              <dt><math><mi>WL</mi></math></dt><dd>establishing the standing water layer: 100 mm, once, in the first month</dd>
+              <dt><math><mi>PERC</mi></math></dt><dd>percolation and seepage: 4 (heavy clay), 6 (base) or 8 (sandy) mm per day</dd>
+              <dt><math><msub><mi>d</mi><mi>m</mi></msub></math></dt><dd>flooded days of the season in month m; the whole 150-day season is treated as flooded</dd>
+            </dl>
+          </div>
+          <p>Field application efficiency is <strong>not</strong> applied to rice. The losses on a rice basin are already
+            represented explicitly by percolation, and applying η<sub>f</sub> as well would count them twice. Only canal
+            losses are added between the field and the river. The crop-need level for rice is the same
+            max(ETc − Pe, 0) as for the other crops, so the levels remain comparable.</p>
+          <p>With these parameters, rice needs 22&#8239;200–28&#8239;200&nbsp;m³/ha at the field (percolation 4–8&nbsp;mm/day),
+            close to the “improved” irrigation norms in the regional literature and below the “existing” norms, which also
+            include drainage releases. Surface releases from rice basins and leaching of saline land are not modelled.</p>
+        </section>
+
+        <!-- 09 -->
+        <section class="doc-section" id="regional" aria-labelledby="h-regional">
+          <span class="sec-no">09</span>
+          <h2 id="h-regional">Regional <em>water use</em></h2>
+          <p>Once the seasonal coefficients exist, regional water use at any level is a weighted sum over the eight crop
+            groups. This is the only calculation the website and the simulator perform.</p>
+          <div class="formula" role="group" aria-label="Regional water use">
+            <p class="formula-head"><span>Regional water use</span><span>levels l: crop need, at the field, river withdrawal</span></p>
+            <math display="block">
+              <mrow><msub><mi>W</mi><mi>l</mi></msub><mo>(</mo><mi>A</mi><mo>,</mo><mi>C</mi><mo>,</mo><mi>E</mi><mo>)</mo><mo>=</mo>
+                <mfrac><mn>1</mn><msup><mn>10</mn><mn>9</mn></msup></mfrac><mo>&#8290;</mo>
+                <munder><mo>∑</mo><mi>c</mi></munder><msub><mi>A</mi><mi>c</mi></msub><mo>&#8290;</mo><msub><mi>k</mi><mi>l</mi></msub><mo>(</mo><mi>c</mi><mo>,</mo><mi>C</mi><mo>,</mo><mi>E</mi><mo>)</mo>
+                <mspace width="0.8em"/><mtext>km³</mtext></mrow>
+            </math>
+            <dl class="vars">
+              <dt><math><msub><mi>A</mi><mi>c</mi></msub></math></dt><dd>sown area of crop group c, ha (official statistics for 2010–2025, or a user scenario)</dd>
+              <dt><math><msub><mi>k</mi><mi>l</mi></msub></math></dt><dd>seasonal coefficient of crop group c at level l, m³/ha, for climate C and efficiency scenario E</dd>
+            </dl>
+          </div>
+          <p><strong>Cmean is not an average climate.</strong> Each of the 16 years 2010–2025 is modelled on its own daily
+            weather, and Cmean is the mean of the 16 resulting coefficients for each crop and scenario. It is a planning
+            reference, not a forecast of a future season.</p>
+          <div class="formula" role="group" aria-label="Definition of Cmean">
+            <p class="formula-head"><span>Mean-climate coefficient</span><span>Cmean</span></p>
+            <math display="block">
+              <mrow><msub><mi>k</mi><mi>l</mi></msub><mo>(</mo><mi>c</mi><mo>,</mo><msub><mi>C</mi><mi>mean</mi></msub><mo>,</mo><mi>E</mi><mo>)</mo><mo>=</mo>
+                <mfrac><mn>1</mn><mn>16</mn></mfrac><munderover><mo>∑</mo><mrow><mi>y</mi><mo>=</mo><mn>2010</mn></mrow><mn>2025</mn></munderover>
+                <msub><mi>k</mi><mi>l</mi></msub><mo>(</mo><mi>c</mi><mo>,</mo><msub><mi>C</mi><mi>y</mi></msub><mo>,</mo><mi>E</mi><mo>)</mo></mrow>
+            </math>
+          </div>
+          <p>The planning reference used across the site is <strong>W(A2025, Cmean, E<sub>base</sub>) = 7.30&nbsp;km³</strong>
+            of river withdrawal (2.36&nbsp;km³ crop need, 4.20&nbsp;km³ at the field) for the 188&#8239;094&nbsp;ha sown in 2025.</p>
+          <h3>Coefficients by crop</h3>
+          <p>The table reads the published coefficients directly. Change the climate or the efficiency scenario to see how each
+            crop group responds.</p>
+          <div class="explorer" id="coef-view" aria-live="off">
+            <noscript><p class="note">This table needs JavaScript. The same coefficients are listed in outputs/layer1_scenarios.csv.</p></noscript>
+          </div>
+        </section>
+
+        <!-- 10 -->
+        <section class="doc-section" id="optimiser" aria-labelledby="h-optimiser">
+          <span class="sec-no">10</span>
+          <h2 id="h-optimiser">Crop-mix <em>optimiser</em></h2>
+          <p>The optimiser looks for the crop mix that needs the least river water while staying close to the current
+            structure. It is a linear programme over the eight crop areas, solved with the HiGHS solver through
+            <code>scipy.optimize.linprog</code>. <strong>It minimises water, not cost or profit.</strong> Income is not modelled,
+            because costs per hectare and several prices and yields are not available.</p>
+          <p>This section describes the original same-land optimiser, whose results appear on the Simulator and Evidence
+            pages. A separate, more general formulation (water budget, unsown land allowed, other objectives, shadow prices)
+            is described on the <a href="planner.html#how">Decision Lab</a> page. It does not change the results below.</p>
+          <div class="formula" role="group" aria-label="Linear programme">
+            <p class="formula-head"><span>Linear programme</span><span>areas x in ha; x⁰ = areas of 2025</span></p>
+            <math display="block">
+              <mtable class="m-rows" displaystyle="true">
+                <mtr><mtd><munder><mi>min</mi><mi>x</mi></munder></mtd><mtd><mrow><munder><mo>∑</mo><mi>c</mi></munder><msub><mi>k</mi><mi>c</mi></msub><mo>&#8290;</mo><msub><mi>x</mi><mi>c</mi></msub></mrow></mtd></mtr>
+                <mtr><mtd><mtext>subject to</mtext></mtd><mtd><mrow><mo>(</mo><mn>1</mn><mo>−</mo><mi>d</mi><mo>)</mo><mo>&#8290;</mo><msubsup><mi>x</mi><mi>c</mi><mn>0</mn></msubsup><mo>≤</mo><msub><mi>x</mi><mi>c</mi></msub><mo>≤</mo><mo>(</mo><mn>1</mn><mo>+</mo><mi>d</mi><mo>)</mo><mo>&#8290;</mo><msubsup><mi>x</mi><mi>c</mi><mn>0</mn></msubsup><mspace width="0.8em"/><mtext>for each crop group</mtext></mrow></mtd></mtr>
+                <mtr><mtd></mtd><mtd><mrow><munder><mo>∑</mo><mrow><mi>c</mi><mo>∈</mo><mi>food</mi></mrow></munder><msub><mi>x</mi><mi>c</mi></msub><mo>≥</mo><mi>f</mi><mo>&#8290;</mo><munder><mo>∑</mo><mrow><mi>c</mi><mo>∈</mo><mi>food</mi></mrow></munder><msubsup><mi>x</mi><mi>c</mi><mn>0</mn></msubsup></mrow></mtd></mtr>
+                <mtr><mtd></mtd><mtd><mrow><munder><mo>∑</mo><mi>c</mi></munder><msub><mi>x</mi><mi>c</mi></msub><mo>=</mo><munder><mo>∑</mo><mi>c</mi></munder><msubsup><mi>x</mi><mi>c</mi><mn>0</mn></msubsup><mspace width="0.8em"/><mtext>(total sown area unchanged)</mtext></mrow></mtd></mtr>
+              </mtable>
+            </math>
+            <dl class="vars">
+              <dt><math><msub><mi>k</mi><mi>c</mi></msub></math></dt><dd>river-withdrawal coefficient of crop group c under Cmean and E<sub>base</sub>, m³/ha</dd>
+              <dt><math><mi>d</mi></math></dt><dd>how far each crop may move from its 2025 area (corridor)</dd>
+              <dt><math><mi>f</mi></math></dt><dd>minimum share of the 2025 food-crop area that must be kept</dd>
+            </dl>
+            <p class="formula-note">Food crops: rice, wheat, potato, open-field vegetables and melons. Fodder, oilseeds and other grains are not counted as food crops.</p>
+          </div>
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Optimiser presets">
+            <table class="data">
+              <caption>Constraint presets<small>Policy choices, not data: all have status assumed.</small></caption>
+              <thead><tr><th scope="col">Preset</th><th scope="col" class="num">Corridor d</th><th scope="col" class="num">Food crops f</th><th scope="col" class="num">Total area</th><th scope="col" class="num">River withdrawal, km³</th><th scope="col" class="num">Saving</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Tight</th><td class="num">±15&nbsp;%</td><td class="num">≥ 95&nbsp;%</td><td class="num">= 2025</td><td class="num">7.19</td><td class="num">1.5&nbsp;%</td></tr>
+                <tr><th scope="row">Moderate</th><td class="num">±30&nbsp;%</td><td class="num">≥ 80&nbsp;%</td><td class="num">= 2025</td><td class="num">7.06</td><td class="num">3.4&nbsp;%</td></tr>
+                <tr><th scope="row">Flexible</th><td class="num">±50&nbsp;%</td><td class="num">≥ 60&nbsp;%</td><td class="num">= 2025</td><td class="num">6.89</td><td class="num">5.6&nbsp;%</td></tr>
+              </tbody>
+              <tfoot><tr><th scope="row">Baseline 2025</th><td class="num">—</td><td class="num">—</td><td class="num">188&#8239;094 ha</td><td class="num">7.30</td><td class="num">—</td></tr></tfoot>
+            </table>
+          </div>
+          <p>The solution always sits at a corner of the feasible region: rice moves to the lower edge of its corridor, the
+            other crops to their upper edges, and fodder takes the remaining area. Real farms change their crop mix gradually,
+            so the optimised mixes are bounds on what restructuring alone could do, not recommendations. Rotations, soils,
+            salinity, markets and the fodder needs of livestock are not represented.</p>
+        </section>
+
+        <!-- 11 -->
+        <section class="doc-section" id="evaluation" aria-labelledby="h-evaluation">
+          <span class="sec-no">11</span>
+          <h2 id="h-evaluation">Baseline versus <em>optimised</em></h2>
+          <p>The baseline and the optimised mixes are computed differently, and the difference matters for how savings are read.</p>
+          <ul>
+            <li><strong>Baseline 2025</strong> is the official 2025 crop structure. It can be evaluated under any climate and efficiency scenario.</li>
+            <li><strong>Optimised mixes</strong> are found once, under Cmean and E<sub>base</sub>. Under other conditions the same
+              areas are <strong>evaluated, not re-optimised</strong>.</li>
+          </ul>
+          <div class="formula" role="group" aria-label="Saving">
+            <p class="formula-head"><span>Saving under conditions C and E</span><span>river withdrawal</span></p>
+            <math display="block">
+              <mrow><mi>S</mi><mo>(</mo><mi>C</mi><mo>,</mo><mi>E</mi><mo>)</mo><mo>=</mo>
+                <mfrac><mrow><mi>W</mi><mo>(</mo><msub><mi>A</mi><mi>base</mi></msub><mo>,</mo><mi>C</mi><mo>,</mo><mi>E</mi><mo>)</mo><mo>−</mo><mi>W</mi><mo>(</mo><msub><mi>A</mi><mi>opt</mi></msub><mo>,</mo><mi>C</mi><mo>,</mo><mi>E</mi><mo>)</mo></mrow>
+                  <mrow><mi>W</mi><mo>(</mo><msub><mi>A</mi><mi>base</mi></msub><mo>,</mo><mi>C</mi><mo>,</mo><mi>E</mi><mo>)</mo></mrow></mfrac>
+                <mo>×</mo><mn>100</mn><mo>&#8202;</mo><mo>%</mo></mrow>
+            </math>
+            <p class="formula-note">Both mixes are evaluated under the same C and E. Canal efficiency divides every crop’s
+              withdrawal by the same factor, so it cancels out of S: it changes the volumes, not the saving in percent.</p>
+          </div>
+          <p>Across all 612 conditions (17 climate options × 36 efficiency scenarios), the saving ranges from −0.3 to 3.3&nbsp;%
+            (Tight), −1.4 to 8.1&nbsp;% (Moderate) and −2.3 to 13.5&nbsp;% (Flexible). A negative value means the mix chosen
+            for average conditions uses more water than the baseline under those particular conditions.</p>
+        </section>
+
+        <!-- 12 -->
+        <section class="doc-section" id="water-years" aria-labelledby="h-water-years">
+          <span class="sec-no">12</span>
+          <h2 id="h-water-years">Water-year <em>classes</em></h2>
+          <p>Years are classed as low, average or high water by upstream Syr Darya basin runoff, using the 25th and 75th
+            percentiles of the available series. Only five years (2020–2024) of runoff are published in open yearbooks, so the
+            classification is coarse: with five values, the low and high classes each contain exactly one year.</p>
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Water-year classes">
+            <table class="data">
+              <caption>Annual basin runoff and water class<small>Runoff: CAWater-Info yearbooks (real). Class: modelled. P25 = 32.24 km³, P75 = 39.73 km³.</small></caption>
+              <thead><tr><th scope="col">Year</th><th scope="col" class="num">Runoff, km³</th><th scope="col">Class</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">2020</th><td class="num">32.24</td><td>average</td></tr>
+                <tr><th scope="row">2021</th><td class="num">32.09</td><td>low</td></tr>
+                <tr><th scope="row">2022</th><td class="num">39.73</td><td>average</td></tr>
+                <tr><th scope="row">2023</th><td class="num">35.28</td><td>average</td></tr>
+                <tr><th scope="row">2024</th><td class="num">41.99</td><td>high</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>The runoff is measured in the upper basin, not as inflow to Kyzylorda Region. An official irrigation limit is
+            available only for the high-water year 2024 (3.7&nbsp;km³). The model does not link a water class to the weather
+            of the same year: a dry year upstream is not assumed to be a hot year downstream.</p>
+        </section>
+
+        <!-- 13 -->
+        <section class="doc-section" id="scope" aria-labelledby="h-scope">
+          <span class="sec-no">13</span>
+          <h2 id="h-scope">What the method <em>is not</em></h2>
+          <div class="split">
+            <div class="split-col is-yes">
+              <h3><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>It is</h3>
+              <ul>
+                <li>A transparent planning model that compares crop mixes under stated climate and efficiency assumptions.</li>
+                <li>A regional model: Kyzylorda Region is one unit.</li>
+                <li>Reproducible: two commands rebuild every result and the website data from the data files.</li>
+              </ul>
+            </div>
+            <div class="split-col is-no">
+              <h3><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>It is not</h3>
+              <ul>
+                <li>A forecast of a future season, or a measurement of actual withdrawal.</li>
+                <li>Validated: comparisons with official figures rest on zero or one observation each.</li>
+                <li>A district or field model, an economic model, or a model of deficit irrigation, leaching or drainage releases.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="next-links">
+            <a class="next-link" href="evidence.html"><span>Next</span><b>Data &amp; Evidence</b><p>Sources, data status, sensitivity and the backtest.</p></a>
+            <a class="next-link" href="simulator.html"><span>Try it</span><b>Simulator</b><p>Change the crop mix and the conditions.</p></a>
+            <a class="next-link" href="about.html"><span>Context</span><b>About the project</b><p>Why the question matters for the region.</p></a>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="index.html" aria-label="CropMix Twin home">
+          <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M16 3c4.6 6 9 10.6 9 16a9 9 0 1 1-18 0c0-5.4 4.4-10 9-16Z" fill="none" stroke="url(#bm)" stroke-width="2"/>
+            <path d="M9.6 20.5h12.8M10.5 24h11M16 13.5v13" stroke="url(#bm)" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+          <span class="brand-word">CropMix<em>Twin</em></span>
+        </a>
+        <p>A planning model of irrigation water use for Kyzylorda Region, Kazakhstan. Planning model, not a field
+          measurement; not validated against observations.</p>
+      </div>
+      <nav aria-label="Footer">
+        <p class="footer-title">Pages</p>
+        <ul class="footer-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="simulator.html">Simulator</a></li>
+          <li><a href="planner.html">Decision Lab</a></li>
+          <li><a href="methodology.html">Methodology</a></li>
+          <li><a href="evidence.html">Data &amp; Evidence</a></li>
+          <li><a href="about.html">About</a></li>
+        </ul>
+      </nav>
+      <div>
+        <p class="footer-title">Data</p>
+        <p class="footer-small">Climate: NASA POWER. Crop coefficients: FAO-56 (Allen et al., 1998). Crop areas: Bureau of
+          National Statistics of Kazakhstan. Runoff: CAWater-Info yearbooks.</p>
+        <p class="footer-small">Map: © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> via
+          geoBoundaries, <a href="https://opendatacommons.org/licenses/odbl/1-0/">ODbL 1.0</a>; river: Natural Earth.</p>
+      </div>
+    </div>
+    <div class="footer-base">
+      <p class="footer-small">Xylem Global Student Innovation Challenge 2026 · Water Quantity track</p>
+      <p class="footer-small"><a href="https://github.com/Assygat/CropMix">Source code and data on GitHub</a></p>
+    </div>
+  </footer>
+
+  <script src="data/model.js"></script>
+  <script src="data/simulator.js"></script>
+  <script src="model_calc.js"></script>
+  <script src="data_views.js"></script>
+  <script src="site.js"></script>
+</body>
+</html>

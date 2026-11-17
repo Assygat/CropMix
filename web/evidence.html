@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Data &amp; Evidence — CropMix Twin</title>
+  <meta name="description" content="Where CropMix Twin's numbers come from and how far they can be trusted: data sources, measured versus assumed parameters, comparison with official limits, backtest, sensitivity analysis and limitations.">
+  <meta name="theme-color" content="#061522">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+  <link rel="stylesheet" href="content.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav-wrap nav-wrap--sticky">
+    <nav class="nav glass" aria-label="Primary">
+      <a class="brand" href="index.html" aria-label="CropMix Twin home">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <defs>
+            <linearGradient id="bm" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#36B9D6"/><stop offset="1" stop-color="#007DFF"/>
+            </linearGradient>
+          </defs>
+          <path d="M16 3c4.6 6 9 10.6 9 16a9 9 0 1 1-18 0c0-5.4 4.4-10 9-16Z" fill="none" stroke="url(#bm)" stroke-width="2"/>
+          <path d="M9.6 20.5h12.8M10.5 24h11M16 13.5v13" stroke="url(#bm)" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        <span class="brand-word">CropMix<em>Twin</em></span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="simulator.html">Simulator</a></li>
+        <li><a href="planner.html">Decision Lab</a></li>
+        <li><a href="methodology.html">Methodology</a></li>
+        <li><a href="evidence.html" aria-current="page">Data &amp; Evidence</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+      <a class="nav-cta" href="simulator.html">Open Simulator
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 12 12 4M6 4h6v6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+        <span></span><span></span>
+      </button>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="page-head" aria-labelledby="page-title" style="--head-accent: rgba(117,224,208,.16)">
+      <p class="eyebrow"><span class="eyebrow-line"></span>Data &amp; Evidence</p>
+      <h1 class="page-title" id="page-title">What the numbers <em>rest on</em>.</h1>
+      <p class="page-lede">Every input is traced to a source and labelled by what kind of information it is. This page
+        shows which parts of the model come from records about the region, which come from the literature or from
+        assumptions, how the results compare with official figures, and which assumptions move them most.</p>
+      <ul class="page-meta" aria-label="Evidence at a glance">
+        <li><strong>96</strong> cited source records</li>
+        <li><strong>0 of 88</strong> conversion parameters measured in the region</li>
+        <li>Backtest: <strong>0–1</strong> observation per check</li>
+        <li><strong>Not validated</strong></li>
+      </ul>
+    </section>
+
+    <div class="doc">
+      <nav class="toc" aria-label="On this page">
+        <p class="toc-title">On this page</p>
+        <ol>
+          <li><a href="#kinds">Five kinds of information</a></li>
+          <li><a href="#sources">Sources</a></li>
+          <li><a href="#official">Model vs official figures</a></li>
+          <li><a href="#history">Historical crop structures</a></li>
+          <li><a href="#backtest">Backtest</a></li>
+          <li><a href="#sensitivity">Sensitivity</a></li>
+          <li><a href="#scenarios">Crop-mix scenarios</a></li>
+          <li><a href="#uncertainty">Uncertainty</a></li>
+          <li><a href="#inputs">Climate input check</a></li>
+          <li><a href="#limitations">Limitations</a></li>
+        </ol>
+      </nav>
+
+      <div class="doc-body prose">
+
+        <!-- 01 -->
+        <section class="doc-section" id="kinds" aria-labelledby="h-kinds">
+          <span class="sec-no">01</span>
+          <h2 id="h-kinds">Five kinds of <em>information</em></h2>
+          <p class="lead">A planning model mixes facts, borrowed parameters and choices. They deserve different levels of
+            trust, so the project keeps them apart.</p>
+          <ul class="ledger">
+            <li><span class="tag tag-observed">observed</span><b>Records about the region</b><span>Official sown areas 2010–2025, published irrigation limits and plans, upstream runoff.</span></li>
+            <li><span class="tag tag-external">external dataset</span><b>Gridded climate</b><span>NASA POWER daily weather: reanalysis and satellite data, not station observations.</span></li>
+            <li><span class="tag tag-lit">literature</span><b>Published parameters</b><span>FAO-56 crop coefficients and stages; FAO rice flooding and percolation values.</span></li>
+            <li><span class="tag tag-assumed">assumed</span><b>Scenario choices</b><span>Field and canal efficiencies, optimiser corridors, food-crop list, proxy crops.</span></li>
+            <li><span class="tag tag-model">modelled</span><b>Model outputs</b><span>Every water volume, coefficient, saving and water-year class on this site.</span></li>
+          </ul>
+          <p>In the data files every number carries a <code>status</code> column: <code>real</code> when it comes from an
+            external source about the region or its climate, <code>assumed</code> otherwise. A literature value applied to
+            Kyzylorda Region is recorded as <code>assumed</code> even when the source is cited. The source shows that the
+            value was published, not that it holds for this region.</p>
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Data status by role">
+            <table class="data">
+              <caption>Number of values in data/, by role<small>From docs/limitations.md (data status by role).</small></caption>
+              <thead><tr><th scope="col">Role of the data</th><th scope="col" class="num">real</th><th scope="col" class="num">assumed</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Daily climate, NASA POWER (gridded reanalysis, not station observations)</th><td class="num">48&#8239;106</td><td class="num">0</td></tr>
+                <tr><th scope="row">Sown areas (official statistics)</th><td class="num">160</td><td class="num">0</td></tr>
+                <tr><th scope="row">Crop coefficients, stages and sowing dates (FAO-56 applied to the region)</th><td class="num">0</td><td class="num">70</td></tr>
+                <tr><th scope="row">Field and canal efficiencies</th><td class="num">0</td><td class="num">7</td></tr>
+                <tr><th scope="row">Rice: saturation, water layer, percolation; literature norms for checks</th><td class="num">0</td><td class="num">11</td></tr>
+                <tr><th scope="row">Optimiser constraints</th><td class="num">0</td><td class="num">23</td></tr>
+                <tr><th scope="row">Kc ranges for the sensitivity analysis (FAO-56 Table 12)</th><td class="num">0</td><td class="num">10</td></tr>
+                <tr><th scope="row">Decision Lab scenarios: scarcity rules, stress tests, Monte Carlo ranges</th><td class="num">0</td><td class="num">33</td></tr>
+                <tr><th scope="row">Observations for comparison: withdrawal, limits, runoff</th><td class="num">26</td><td class="num">0</td></tr>
+                <tr><th scope="row">Economics (not used in the water calculation)</th><td class="num">266</td><td class="num">9</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="note"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 7v4M8 4.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span><strong>A high share of “real” values says little about model quality.</strong> Overall, 99.7&nbsp;% of the
+              values in the data files are real, but almost all of them are daily climate records. Every parameter that turns
+              area and climate into a water volume (crop coefficients and calendars, efficiencies, rice parameters) is an
+              assumption: 0 of 88 is measured in the region.</span></p>
+        </section>
+
+        <!-- 02 -->
+        <section class="doc-section" id="sources" aria-labelledby="h-sources">
+          <span class="sec-no">02</span>
+          <h2 id="h-sources">Sources</h2>
+          <p>The full register, with the exact table, page and quotation for each number, is kept in
+            <a href="https://github.com/Assygat/CropMix/blob/main/data/SOURCES.md"><code>data/SOURCES.md</code></a>
+            (records S001–S096). The main groups:</p>
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Main sources">
+            <table class="data">
+              <caption>Main sources and what they are used for</caption>
+              <thead><tr><th scope="col">Source</th><th scope="col">Used for</th><th scope="col">Kind</th></tr></thead>
+              <tbody>
+                <tr><th scope="row"><a href="https://power.larc.nasa.gov/">NASA POWER</a>, daily point data, 44.8°&nbsp;N 65.5°&nbsp;E</th><td>Temperature, humidity, wind, radiation and precipitation, 2010–2025 (and January–September 2026 for one backtest check)</td><td><span class="tag tag-external">external dataset</span></td></tr>
+                <tr><th scope="row">NOAA GSOD, Kyzylorda station 38062</th><td>Cross-check of NASA temperatures and wind only; not used in the calculation</td><td><span class="tag tag-observed">observed</span></td></tr>
+                <tr><th scope="row"><a href="https://www.fao.org/4/x0490e/x0490e00.htm">FAO-56</a> (Allen et al., 1998)</th><td>Penman–Monteith ET₀, crop coefficients, stage lengths, climate adjustment of K<sub>c</sub></td><td><span class="tag tag-lit">literature</span></td></tr>
+                <tr><th scope="row"><a href="https://www.fao.org/4/s2022e/s2022e08.htm">FAO Training Manual 3</a>, Irrigation Water Needs</th><td>Net irrigation requirement; rice saturation, water layer and percolation</td><td><span class="tag tag-lit">literature</span></td></tr>
+                <tr><th scope="row"><a href="https://www.fao.org/3/t7202e/t7202e08.htm">FAO Training Manual 4</a>, irrigation efficiencies</th><td>Base values for field and canal efficiency</td><td><span class="tag tag-lit">literature</span></td></tr>
+                <tr><th scope="row">USDA Soil Conservation Service method (via SIAR, Spain; FAO Paper 46)</th><td>Effective rainfall formula</td><td><span class="tag tag-lit">literature</span></td></tr>
+                <tr><th scope="row"><a href="https://stat.gov.kz/">Bureau of National Statistics</a> of Kazakhstan</th><td>Sown areas by crop, Kyzylorda Region, 2010–2025; yields and prices (not used for water)</td><td><span class="tag tag-observed">observed</span></td></tr>
+                <tr><th scope="row"><a href="https://www.cawater-info.net/">CAWater-Info</a> (SIC ICWC) yearbooks 2020–2024</th><td>Annual Syr Darya basin runoff for water-year classes</td><td><span class="tag tag-observed">observed</span></td></tr>
+                <tr><th scope="row">Regional news reports quoting officials (2024–2026)</th><td>Irrigation limits for 2024 and 2026, the 2025 plan, partial-season withdrawal in 2025 and 2026</td><td><span class="tag tag-observed">observed</span></td></tr>
+                <tr><th scope="row">World Bank project document (North Aral Sea, P170187)</th><td>Order-of-magnitude reference for agricultural water use</td><td><span class="tag tag-observed">observed</span></td></tr>
+                <tr><th scope="row">SANIIRI review of rice irrigation norms</th><td>Literature range for rice water use (checks only)</td><td><span class="tag tag-lit">literature</span></td></tr>
+                <tr><th scope="row">geoBoundaries (OpenStreetMap, ODbL), Natural Earth</th><td>District boundaries (2017) and the Syr Darya line on the map</td><td><span class="tag tag-external">external dataset</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>NASA POWER climate is a modelled product for a 0.5°&nbsp;×&nbsp;0.625° cell. Against the Kyzylorda station in
+            April–October 2010–2025, its daily maximum temperature is 1.2&nbsp;°C lower, its minimum 1.7&nbsp;°C higher and its
+            wind about 16&nbsp;% stronger. Solar radiation and precipitation could not be checked locally.</p>
+        </section>
+
+        <!-- 03 -->
+        <section class="doc-section" id="official" aria-labelledby="h-official">
+          <span class="sec-no">03</span>
+          <h2 id="h-official">Model versus <em>official figures</em></h2>
+          <p>A long official series of irrigation withdrawal for the region is not publicly available. What exists are
+            single figures: the limit for 2024, the plan for 2025, the limit for 2026 and two partial-season reports.
+            Where a full-season figure exists, the model is compared using the crop areas and climate of the same year.</p>
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Model versus official figures">
+            <table class="data">
+              <caption>Modelled river withdrawal versus official figures<small>Base efficiencies (E<sub>base</sub>). Official figures: regional news reports quoting officials (status real).</small></caption>
+              <thead><tr><th scope="col">Year</th><th scope="col">Official figure</th><th scope="col" class="num">Official, km³</th><th scope="col">Model</th><th scope="col" class="num">Model, km³</th><th scope="col" class="num">Ratio</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">2024</th><td>Irrigation limit for the season</td><td class="num">3.70</td><td>W(A2024, C2024, E<sub>base</sub>)</td><td class="num">6.87</td><td class="num">×1.86</td></tr>
+                <tr><th scope="row">2025</th><td>Irrigation plan for the season</td><td class="num">3.35</td><td>W(A2025, C2025, E<sub>base</sub>)</td><td class="num">7.68</td><td class="num">×2.29</td></tr>
+                <tr><th scope="row">2026</th><td>Irrigation limit for the season</td><td class="num">3.20</td><td colspan="3">not compared: no crop areas for 2026</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-note">Across all 36 efficiency and percolation scenarios, the ratio for 2024–2025 ranges from 1.42 to 3.83.</p>
+          <p>The model is consistently higher than the official figures. The data cannot say why. The documented candidates are:</p>
+          <ol>
+            <li><strong>Area.</strong> The model waters every sown hectare (188&#8239;094&nbsp;ha in 2025). By 17 September 2026,
+              122&#8239;000&nbsp;ha had been irrigated, which suggests that part of the fodder and grain area is irrigated
+              little or not at all.</li>
+            <li><strong>Crop demand.</strong> Modelled ETc is an upper estimate. For rice it is 1.22–1.34 times the literature value.</li>
+            <li><strong>Definitions.</strong> The model computes full demand; a limit or plan is an allocated volume, not a measured withdrawal.</li>
+            <li><strong>Efficiencies.</strong> Field and canal efficiencies are assumptions.</li>
+          </ol>
+          <p>For these reasons the site uses absolute volumes only as modelled estimates under stated assumptions, and puts
+            the weight on <em>differences</em> between crop mixes.</p>
+        </section>
+
+        <!-- 04 -->
+        <section class="doc-section" id="history" aria-labelledby="h-history">
+          <span class="sec-no">04</span>
+          <h2 id="h-history">Historical crop <em>structures</em></h2>
+          <p>The region’s crop mix has changed over 2010–2025. This explorer applies the published coefficients to the
+            official areas of any year, under the climate of the same year (or Cmean) and any efficiency scenario. When the
+            year has an official full-season figure and the climate matches, the comparison above is reproduced.</p>
+          <div class="explorer" id="history-explorer">
+            <noscript><p class="note">This explorer needs JavaScript. The comparison table above shows the documented results.</p></noscript>
+          </div>
+          <p class="table-note">Areas are official statistics; “other grains” is derived as all grains minus rice and wheat.
+            Calculation: the same Σ area × coefficient function the simulator uses, applied to the coefficients computed in Python.</p>
+        </section>
+
+        <!-- 05 -->
+        <section class="doc-section" id="backtest" aria-labelledby="h-backtest">
+          <span class="sec-no">05</span>
+          <h2 id="h-backtest">Backtest: four checks, <em>not a validation</em></h2>
+          <p>Four comparisons with independent figures were made. None has more than one observation, so error statistics
+            such as RMSE or correlation are not reported, and no comparison is used to tune the model. The model has not
+            been calibrated.</p>
+          <ul class="checks">
+            <li class="check-card">
+              <div class="check-head"><h3>V1 · Partial season, 2025</h3><span class="check-n">n = 1</span></div>
+              <p class="check-fig"><b>5.21 vs 3.03</b><span>km³, model vs reported, to 4&nbsp;August 2025 (×1.72)</span></p>
+              <p>The reported figure covers all agricultural withdrawal to 4&nbsp;August, with an unstated start date. The
+                observation is lower than all 36 efficiency scenarios (4.04–8.65&nbsp;km³).</p>
+              <p>The modelled water at the field to the same date (2.99&nbsp;km³) is close to the observation. That could
+                point to a different measuring point, to canal efficiency set too low, or to coincidence. With n&nbsp;=&nbsp;1
+                these cannot be told apart.</p>
+            </li>
+            <li class="check-card">
+              <div class="check-head"><h3>V2 · Water per hectare, 2026</h3><span class="check-n">n = 1</span></div>
+              <p class="check-fig"><b>36&#8239;347 vs 27&#8239;049</b><span>m³/ha, model vs reported (×1.34)</span></p>
+              <p>The model divides by sown hectares (2025 structure as a stand-in, 2026 climate); the report divides 3.3&nbsp;km³
+                by 122&#8239;000 irrigated hectares. The denominators differ, so no conclusion is drawn.</p>
+            </li>
+            <li class="check-card">
+              <div class="check-head"><h3>V3 · Order of magnitude</h3><span class="check-n">n = 1</span></div>
+              <p class="check-fig"><b>3.5–4</b><span>km³/year “water consumption” (World Bank, years not given)</span></p>
+              <p>The reference lies between the modelled crop consumption (about 2.1&nbsp;km³) and the modelled river
+                withdrawal (6.5&nbsp;km³), both averaged over 2010–2018. The source does not define “consumption”.</p>
+            </li>
+            <li class="check-card">
+              <div class="check-head"><h3>V4 · Rice components</h3><span class="check-n">n = 1 / 1 / 0</span></div>
+              <p class="check-fig"><b>13&#8239;431</b><span>m³/ha modelled rice ETc vs 10&#8239;000–11&#8239;000 in the literature</span></p>
+              <p>Field supply of 22&#8239;200–28&#8239;200&nbsp;m³/ha sits between the “improved” and “existing” literature norms.
+                No observation exists for river withdrawal per hectare of rice.</p>
+            </li>
+          </ul>
+          <p class="note"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 7v4M8 4.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span><strong>Agreement with observations has not been established.</strong> The direction of the gap (model above
+              observations) is consistent across checks, but its cause (area, efficiency, crop demand or measuring point) cannot
+              be identified from these data.</span></p>
+        </section>
+
+        <!-- 06 -->
+        <section class="doc-section" id="sensitivity" aria-labelledby="h-sensitivity">
+          <span class="sec-no">06</span>
+          <h2 id="h-sensitivity">Which assumptions <em>move the result</em></h2>
+          <p>Each parameter was moved across its documented range with all others at their base values (one at a time).
+            The ranges are assumptions or real year-to-year variation, not measured uncertainty, so the ranking describes
+            sensitivity to the chosen ranges. It does not show which input is the largest real source of error.</p>
+          <figure class="hbars" aria-labelledby="tornado-title">
+            <figcaption>
+              <p class="hbars-title" id="tornado-title">River withdrawal W(A2025, C, E) across each documented range, km³</p>
+              <p class="hbars-sub">Base 7.30&nbsp;km³ (vertical line). Swing = highest minus lowest value.</p>
+            </figcaption>
+            <ol class="hbar-list">
+              <li class="hbar" style="--a:10.83%;--b:91.67%;--base:45.83%"><span class="hbar-name">Canal efficiency<small>0.50 → 0.65</small></span><span class="hbar-track" aria-hidden="true"><i class="hbar-base"></i><i class="hbar-fill"></i><span class="hbar-ends"><span>6.46</span><span>8.40</span></span></span><span class="hbar-val">1.94</span></li>
+              <li class="hbar" style="--a:23.75%;--b:77.08%;--base:45.83%"><span class="hbar-name">Field efficiency<small>0.50 → 0.70</small></span><span class="hbar-track" aria-hidden="true"><i class="hbar-base"></i><i class="hbar-fill"></i><span class="hbar-ends"><span>6.77</span><span>8.05</span></span></span><span class="hbar-val">1.28</span></li>
+              <li class="hbar" style="--a:22.92%;--b:68.33%;--base:45.83%"><span class="hbar-name">Climate year<small>2016 → 2021</small></span><span class="hbar-track" aria-hidden="true"><i class="hbar-base"></i><i class="hbar-fill"></i><span class="hbar-ends"><span>6.75</span><span>7.84</span></span></span><span class="hbar-val">1.09</span></li>
+              <li class="hbar" style="--a:28.33%;--b:63.75%;--base:45.83%"><span class="hbar-name">Rice percolation<small>4 → 8 mm/day</small></span><span class="hbar-track" aria-hidden="true"><i class="hbar-base"></i><i class="hbar-fill"></i><span class="hbar-ends"><span>6.88</span><span>7.73</span></span></span><span class="hbar-val">0.85</span></li>
+              <li class="hbar" style="--a:27.5%;--b:45.83%;--base:45.83%"><span class="hbar-name">NASA wind<small>× 0.84 → × 1.0</small></span><span class="hbar-track" aria-hidden="true"><i class="hbar-base"></i><i class="hbar-fill"></i><span class="hbar-ends"><span>6.86</span><span>7.30</span></span></span><span class="hbar-val">0.44</span></li>
+              <li class="hbar" style="--a:44.17%;--b:53.33%;--base:45.83%"><span class="hbar-name">Crop structure<small>areas of 2022 → 2014, same total</small></span><span class="hbar-track" aria-hidden="true"><i class="hbar-base"></i><i class="hbar-fill"></i><span class="hbar-ends"><span>7.26</span><span>7.48</span></span></span><span class="hbar-val">0.22</span></li>
+              <li class="hbar" style="--a:45%;--b:47.08%;--base:45.83%"><span class="hbar-name">K<sub>c</sub> within FAO-56 Table 12<small>all lower → all upper</small></span><span class="hbar-track" aria-hidden="true"><i class="hbar-base"></i><i class="hbar-fill"></i><span class="hbar-ends"><span>7.28</span><span>7.33</span></span></span><span class="hbar-val">0.06</span></li>
+            </ol>
+            <div class="hbar-axis" aria-hidden="true"><span></span><div><span style="left:12.5%">6.5</span><span style="left:33.33%">7.0</span><span style="left:54.17%">7.5</span><span style="left:75%">8.0</span><span style="left:95.83%">8.5</span></div><span></span></div>
+            <p class="hbars-legend">Swing in km³ on the right. From outputs/sensitivity_ranking.csv.</p>
+          </figure>
+          <ul>
+            <li>A pessimistic canal efficiency of 0.40, shown as a scenario and not ranked, raises withdrawal to 10.50&nbsp;km³ (+43.8&nbsp;%).</li>
+            <li>Scaling crop demand (ETc) by ±10&nbsp;% changes withdrawal by ±7.9&nbsp;%; less than proportionally, because the
+              rice saturation, water layer and percolation terms do not scale with ETc.</li>
+            <li>Precipitation hardly matters: ±20&nbsp;% changes withdrawal by ∓0.5&nbsp;%.</li>
+          </ul>
+          <p class="note"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 7v4M8 4.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span><strong>The small K<sub>c</sub> swing does not mean K<sub>c</sub> is unimportant.</strong> FAO-56 gives ranges only
+              for some values (end-season K<sub>c</sub> of rice, wheat, vegetables and other grains; mid-season K<sub>c</sub> of
+              oilseeds). Mid-season K<sub>c</sub> of rice and fodder, about 81&nbsp;% of the 2025 area, the initial values and the
+              climate adjustment were not varied. Withdrawal is nearly proportional to crop demand.</span></p>
+        </section>
+
+        <!-- 07 -->
+        <section class="doc-section" id="scenarios" aria-labelledby="h-scenarios">
+          <span class="sec-no">07</span>
+          <h2 id="h-scenarios">Crop-mix <em>scenarios</em></h2>
+          <p>The three optimised mixes keep the 2025 total of 188&#8239;094&nbsp;ha. Each moves rice to the lower edge of its
+            corridor and the other groups to their upper edges, with fodder taking the remainder.</p>
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Optimised crop areas">
+            <table class="data">
+              <caption>Crop areas in the optimised mixes, ha<small>Modelled (optimiser under Cmean, E<sub>base</sub>); Baseline: official 2025 areas.</small></caption>
+              <thead><tr><th scope="col">Crop group</th><th scope="col" class="num">Baseline 2025</th><th scope="col" class="num">Tight</th><th scope="col" class="num">Moderate</th><th scope="col" class="num">Flexible</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Rice</th><td class="num">81&#8239;697</td><td class="num">72&#8239;169</td><td class="num">57&#8239;188</td><td class="num">40&#8239;848</td></tr>
+                <tr><th scope="row">Fodder crops</th><td class="num">70&#8239;100</td><td class="num">74&#8239;183</td><td class="num">83&#8239;720</td><td class="num">92&#8239;800</td></tr>
+                <tr><th scope="row">Wheat</th><td class="num">10&#8239;412</td><td class="num">11&#8239;973</td><td class="num">13&#8239;535</td><td class="num">15&#8239;618</td></tr>
+                <tr><th scope="row">Melons</th><td class="num">8&#8239;500</td><td class="num">9&#8239;775</td><td class="num">11&#8239;050</td><td class="num">12&#8239;750</td></tr>
+                <tr><th scope="row">Open-field vegetables</th><td class="num">6&#8239;700</td><td class="num">7&#8239;705</td><td class="num">8&#8239;710</td><td class="num">10&#8239;050</td></tr>
+                <tr><th scope="row">Oilseeds</th><td class="num">6&#8239;400</td><td class="num">7&#8239;360</td><td class="num">8&#8239;320</td><td class="num">9&#8239;600</td></tr>
+                <tr><th scope="row">Other grains</th><td class="num">2&#8239;686</td><td class="num">3&#8239;089</td><td class="num">3&#8239;491</td><td class="num">4&#8239;029</td></tr>
+                <tr><th scope="row">Potato</th><td class="num">1&#8239;600</td><td class="num">1&#8239;840</td><td class="num">2&#8239;080</td><td class="num">2&#8239;400</td></tr>
+              </tbody>
+              <tfoot>
+                <tr><th scope="row">River withdrawal, km³</th><td class="num">7.30</td><td class="num">7.19</td><td class="num">7.06</td><td class="num">6.89</td></tr>
+                <tr><th scope="row">Saving at Cmean, E<sub>base</sub></th><td class="num">—</td><td class="num">1.5&nbsp;%</td><td class="num">3.4&nbsp;%</td><td class="num">5.6&nbsp;%</td></tr>
+                <tr><th scope="row">Saving over 612 conditions</th><td class="num">—</td><td class="num">−0.3 to 3.3&nbsp;%</td><td class="num">−1.4 to 8.1&nbsp;%</td><td class="num">−2.3 to 13.5&nbsp;%</td></tr>
+              </tfoot>
+            </table>
+          </div>
+          <p>Why the savings are small: per hectare of river withdrawal, the crop groups differ little (24&#8239;300–39&#8239;200&nbsp;m³/ha)
+            except rice (43&#8239;800&nbsp;m³/ha), and the same efficiencies multiply every crop. None of the presets reaches a
+            10&nbsp;% cut, and none reaches the 3.7&nbsp;km³ limit.</p>
+          <h3>Experimental runs with less sown area</h3>
+          <p>Separately from the presets, the total area was reduced by 5, 10 and 15&nbsp;%. These runs are labelled
+            experimental. They split the saving into a structure part (the optimum at the same area) and an area part (the
+            additional reduction).</p>
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Area-reduction experiments">
+            <table class="data">
+              <caption>Total saving with less sown area<small>Experimental; outputs/optimizer_area_experiments.csv. Saving = structure + area.</small></caption>
+              <thead><tr><th scope="col">Preset</th><th scope="col" class="num">−5&nbsp;% area</th><th scope="col" class="num">−10&nbsp;% area</th><th scope="col" class="num">−15&nbsp;% area</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Tight</th><td class="num">6.6&nbsp;%</td><td class="num">no solution</td><td class="num">no solution</td></tr>
+                <tr><th scope="row">Moderate</th><td class="num">8.4&nbsp;%</td><td class="num">13.5&nbsp;%</td><td class="num">18.5&nbsp;%</td></tr>
+                <tr><th scope="row">Flexible</th><td class="num">10.7&nbsp;%</td><td class="num">15.7&nbsp;%</td><td class="num">20.8&nbsp;%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-note">Tight has no solution at −10 and −15&nbsp;%: its food-crop minimum (103&#8239;463&nbsp;ha) plus the
+            lower bounds of the other crops (67&#8239;308&nbsp;ha) exceed the reduced total. Almost all saving beyond 1.5–5.6&nbsp;%
+            comes from sowing less, not from changing the mix. The split depends on the order (structure first, then area);
+            it is a convention, not a fact.</p>
+        </section>
+
+        <!-- 08 -->
+        <section class="doc-section" id="uncertainty" aria-labelledby="h-uncertainty">
+          <span class="sec-no">08</span>
+          <h2 id="h-uncertainty">Uncertainty: <em>2&#8239;000 model runs</em></h2>
+          <p>The one-at-a-time ranking above moves one input while the others stay fixed. Here all ten uncertain inputs move
+            together: 2&#8239;000 combinations drawn by Latin hypercube sampling, each run through the same water balance and
+            the same optimiser. Every input is uniform within its range, because the ranges carry no information about shape.
+            That choice is itself an assumption.</p>
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Monte Carlo inputs">
+            <table class="data">
+              <caption>Sampled inputs<small>From data/uncertainty_ranges.csv, data/efficiency.csv, data/rice_water.csv and data/sensitivity_ranges.csv. All assumed.</small></caption>
+              <thead><tr><th scope="col">Input</th><th scope="col" class="num">Range</th><th scope="col" class="num">Rank correlation with withdrawal</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Canal efficiency</th><td class="num">0.50–0.65</td><td class="num">−0.70</td></tr>
+                <tr><th scope="row">Field efficiency (not rice)</th><td class="num">0.50–0.70</td><td class="num">−0.44</td></tr>
+                <tr><th scope="row">ET₀ multiplier (reanalysis and method error)</th><td class="num">0.90–1.10</td><td class="num">0.43</td></tr>
+                <tr><th scope="row">Rice percolation, mm/day</th><td class="num">4–8</td><td class="num">0.30</td></tr>
+                <tr><th scope="row">Precipitation multiplier</th><td class="num">0.80–1.20</td><td class="num">0.00</td></tr>
+                <tr><th scope="row">Five K<sub>c</sub> values within FAO-56 Table 12</th><td class="num">table ranges</td><td class="num">|ρ| ≤ 0.02</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <ul class="stats stats--two">
+            <li class="stat"><p class="stat-value">6.17–8.75<small>km³</small></p><p class="stat-text">River withdrawal of the 2025 crop mix, 5th–95th percentile (base 7.30&nbsp;km³; median 7.33).</p><p class="stat-src"><span class="tag tag-model">modelled</span> outputs/uncertainty_summary.csv</p></li>
+            <li class="stat"><p class="stat-value">2.1–5.9<small>%</small></p><p class="stat-text">Saving of the moderate same-land mix, 5th–95th percentile (3.4&nbsp;% at base values).</p><p class="stat-src"><span class="tag tag-model">modelled</span> outputs/uncertainty_summary.csv</p></li>
+          </ul>
+          <p>The saving stays positive in all 2&#8239;000 runs (minimum 1.9&nbsp;%), but its size depends most on field efficiency
+            (rank correlation 0.74) and rice percolation (0.47). Canal efficiency changes the volume a lot and the percentage
+            saving hardly at all, because it divides every crop’s water by the same number.</p>
+          <p class="note"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 7v4M8 4.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span><strong>This is not a validation.</strong> The spread shows how far the answer moves under the stated ranges. It says
+              nothing about which value is true, and it leaves out inputs that were not varied: mid-season K<sub>c</sub> of rice and
+              fodder, sowing dates, the crop areas and the model structure.</span></p>
+        </section>
+
+        <!-- 09 -->
+        <section class="doc-section" id="inputs" aria-labelledby="h-inputs">
+          <span class="sec-no">09</span>
+          <h2 id="h-inputs">Checking the climate input <em>against a station</em></h2>
+          <p>The model’s output cannot yet be checked against an independent series of withdrawals (see the backtest). Its
+            climate input can. NASA POWER temperatures were compared with the Kyzylorda weather station (NOAA GSOD 38062,
+            3&nbsp;km away) on every day both report, 2010–2025. The station is an independent measurement and was not used to
+            build the model.</p>
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Climate input checks">
+            <table class="data">
+              <caption>Model climate input versus station<small>From outputs/validation_climate.csv. Difference = NASA POWER minus station.</small></caption>
+              <thead><tr><th scope="col">Check</th><th scope="col" class="num">n</th><th scope="col" class="num">Mean difference</th><th scope="col" class="num">MAE</th><th scope="col" class="num">R²</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">T1 · Daily maximum temperature</th><td class="num">5&#8239;699 days</td><td class="num">−1.59 °C <small>(95&nbsp;% CI −1.75 to −1.45)</small></td><td class="num">1.93 °C</td><td class="num">0.97</td></tr>
+                <tr><th scope="row">T1e · Same, station maxima reported explicitly</th><td class="num">4&#8239;984 days</td><td class="num">−1.60 °C <small>(95&nbsp;% CI −1.75 to −1.46)</small></td><td class="num">1.91 °C</td><td class="num">0.97</td></tr>
+                <tr><th scope="row">T2 · Daily minimum temperature</th><td class="num">5&#8239;699 days</td><td class="num">+0.81 °C <small>(95&nbsp;% CI 0.50 to 1.08)</small></td><td class="num">2.50 °C</td><td class="num">0.93</td></tr>
+                <tr><th scope="row">T2e · Same, station minima reported explicitly</th><td class="num">1&#8239;041 days</td><td class="num">−1.43 °C <small>(95&nbsp;% CI −1.84 to −1.05)</small></td><td class="num">2.24 °C</td><td class="num">0.94</td></tr>
+                <tr><th scope="row">T3 · Hargreaves ET₀, NASA vs station temperatures</th><td class="num">104 months</td><td class="num">−12.8 mm <small>(−7.9&nbsp;%)</small></td><td class="num">12.8 mm</td><td class="num">0.94</td></tr>
+                <tr><th scope="row">T4 · Model ET₀ (Penman–Monteith) vs station Hargreaves</th><td class="num">104 months</td><td class="num" colspan="3">ratio 1.23 — different methods, context only</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>The maximum-temperature result is robust. NASA POWER maxima are about 1.6&nbsp;°C below the station, both on all
+            days and on days when the station reported its maximum explicitly. The minimum-temperature result is not.
+            For 82&nbsp;% of days the station minimum carries the GSOD flag “*”: it was derived from the synoptic observations
+            instead of being reported, and such minima tend to be too warm. On the explicitly reported days the sign reverses,
+            but those days are mostly in winter, so neither figure can be taken as the typical difference. T3 uses the station
+            minima and inherits this caveat. The confidence intervals come from a block bootstrap over 30-day blocks and cover
+            only the sampling uncertainty of the mean difference. The day boundaries of the two sources differ by about four hours: GSOD
+            days are UTC days, while the NASA POWER files use local solar time (about UTC+4.4 h at 65.5°&nbsp;E). The model itself uses Penman–Monteith, which also depends on humidity, wind and radiation. The
+            station does not report those, so they remain unchecked.</p>
+          <div class="table-wrap" tabindex="0" role="region" aria-label="External datasets">
+            <table class="data">
+              <caption>Independent datasets: what could check what<small>From outputs/validation_datasets.csv. Withdrawal, delivery, consumptive use and evapotranspiration are different quantities and are not compared with each other.</small></caption>
+              <thead><tr><th scope="col">Dataset</th><th scope="col">Could check</th><th scope="col">Status</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">NOAA GSOD station 38062</th><td>Temperature input (T1–T3)</td><td>Used above</td></tr>
+                <tr><th scope="row">CAWater-Info yearbooks, regional reports</th><td>River withdrawal (one observation per quantity)</td><td>Used in the backtest</td></tr>
+                <tr><th scope="row">MODIS MOD16 / GLEAM evapotranspiration</th><td>Actual ET of irrigated land (consumptive use, not withdrawal)</td><td>Comparison code ready; needs an account-based download and an irrigated-area mask</td></tr>
+                <tr><th scope="row">ERA5-Land</th><td>Consistency of NASA POWER inputs (reanalysis vs reanalysis)</td><td>Not integrated: needs a CDS account</td></tr>
+                <tr><th scope="row">FAO WaPOR v3</th><td>Actual ET</td><td>Region appears outside its mapped extent (to be re-checked)</td></tr>
+                <tr><th scope="row">FAO AQUASTAT / FAOSTAT</th><td>National context only</td><td>Not a regional check</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 10 -->
+        <section class="doc-section" id="limitations" aria-labelledby="h-limitations">
+          <span class="sec-no">10</span>
+          <h2 id="h-limitations">Known <em>limitations</em></h2>
+          <div class="split">
+            <div class="split-col is-no">
+              <h3><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.5 20h19L12 3Z M12 9.5v5 M12 17.2v.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>Data</h3>
+              <ul>
+                <li>Climate is a gridded product for one cell, not station observations; recent values may be preliminary.</li>
+                <li>No measured canal or field efficiencies, rice percolation or local crop coefficients.</li>
+                <li>The composition of the fodder group is unknown; alfalfa describes all of it, which probably overstates its water use.</li>
+                <li>No district-level crop or water data; the region is one unit.</li>
+                <li>Only five years of basin runoff; no gauged inflow to the region.</li>
+                <li>No multi-year official series of irrigation withdrawal.</li>
+              </ul>
+            </div>
+            <div class="split-col is-no">
+              <h3><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.5 20h19L12 3Z M12 9.5v5 M12 17.2v.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>Model</h3>
+              <ul>
+                <li>Full crop demand is assumed: no deficit irrigation, no unirrigated sown area.</li>
+                <li>Leaching of saline land, drainage releases from rice basins, livestock and fish ponds are not included.</li>
+                <li>Fixed sowing dates and stage lengths in every year.</li>
+                <li>Income, costs, markets, rotations and soils are not modelled.</li>
+                <li>Optimised mixes are corner solutions, found once under Cmean and E<sub>base</sub>.</li>
+                <li>Not validated; not a forecast.</li>
+              </ul>
+            </div>
+          </div>
+          <p>The complete, dated list of limitations is maintained in
+            <a href="https://github.com/Assygat/CropMix/blob/main/docs/limitations.md"><code>docs/limitations.md</code></a>.</p>
+          <div class="next-links">
+            <a class="next-link" href="methodology.html"><span>Method</span><b>Methodology</b><p>The equations behind every number on this page.</p></a>
+            <a class="next-link" href="simulator.html"><span>Try it</span><b>Simulator</b><p>Test a crop mix under any of the 612 conditions.</p></a>
+            <a class="next-link" href="about.html"><span>Context</span><b>About the project</b><p>The region, the river and the purpose.</p></a>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="index.html" aria-label="CropMix Twin home">
+          <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M16 3c4.6 6 9 10.6 9 16a9 9 0 1 1-18 0c0-5.4 4.4-10 9-16Z" fill="none" stroke="url(#bm)" stroke-width="2"/>
+            <path d="M9.6 20.5h12.8M10.5 24h11M16 13.5v13" stroke="url(#bm)" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+          <span class="brand-word">CropMix<em>Twin</em></span>
+        </a>
+        <p>A planning model of irrigation water use for Kyzylorda Region, Kazakhstan. Planning model, not a field
+          measurement; not validated against observations.</p>
+      </div>
+      <nav aria-label="Footer">
+        <p class="footer-title">Pages</p>
+        <ul class="footer-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="simulator.html">Simulator</a></li>
+          <li><a href="planner.html">Decision Lab</a></li>
+          <li><a href="methodology.html">Methodology</a></li>
+          <li><a href="evidence.html">Data &amp; Evidence</a></li>
+          <li><a href="about.html">About</a></li>
+        </ul>
+      </nav>
+      <div>
+        <p class="footer-title">Data</p>
+        <p class="footer-small">Climate: NASA POWER. Crop coefficients: FAO-56 (Allen et al., 1998). Crop areas: Bureau of
+          National Statistics of Kazakhstan. Runoff: CAWater-Info yearbooks.</p>
+        <p class="footer-small">Map: © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> via
+          geoBoundaries, <a href="https://opendatacommons.org/licenses/odbl/1-0/">ODbL 1.0</a>; river: Natural Earth.</p>
+      </div>
+    </div>
+    <div class="footer-base">
+      <p class="footer-small">Xylem Global Student Innovation Challenge 2026 · Water Quantity track</p>
+      <p class="footer-small"><a href="https://github.com/Assygat/CropMix">Source code and data on GitHub</a></p>
+    </div>
+  </footer>
+
+  <script src="data/model.js"></script>
+  <script src="data/simulator.js"></script>
+  <script src="model_calc.js"></script>
+  <script src="data_views.js"></script>
+  <script src="site.js"></script>
+</body>
+</html>
