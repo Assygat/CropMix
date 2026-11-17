@@ -14,3 +14,20 @@ outputs/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Сторонние документы с неясными правами на распространение: локальные копии сохраняются,
+# в публичную версию не входят. URL, цитаты и SHA-256 — data/SOURCES.md, data/raw/SHA256SUMS, data/raw/README.md
+data/raw/fao56_chapter3_x0490e07.htm
+data/raw/fao56_chapter4_x0490e08.htm
+data/raw/fao56_chapter6_x0490e0b.htm
+data/raw/fao56_annex2_x0490e0j.htm
+data/raw/fao_s2022e08_irrigation_water_needs_ch4.htm
+data/raw/fao_t7202e08_annex1_irrigation_efficiencies.htm
+data/raw/cawater_syrdarya_water_kb.htm
+data/raw/cawater_yearbook2020_02_ru.htm
+data/raw/cawater_yearbook2021_02_ru.htm
+data/raw/cawater_yearbook2022_02_ru.htm
+data/raw/cawater_yearbook2023_02_ru.htm
+data/raw/cawater_yearbook2024_02_ru.htm
+data/raw/cawater_saniiri80_8_nabiev_rice.pdf
+data/raw/siar_mapa_precipitacion_efectiva.pdf

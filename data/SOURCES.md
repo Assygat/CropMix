@@ -26,6 +26,27 @@
 Загрузчик (`src/data_loader.py`) не пропустит число со `status=real`, если у записи
 не заполнены url, location, quote или accessed.
 
+## Копии документов, которые не распространяются
+
+Полные копии 14 документов (страницы FAO, страницы ежегодников CAWater-Info, статья САНИИРИ, записка SIAR)
+использовались при сборке данных, но в публичный репозиторий не входят: права на их распространение не ясны.
+Записи ниже (url, документ, место, точная цитата, дата обращения) сохраняются полностью, контрольные суммы —
+в `data/raw/SHA256SUMS`, список файлов, id и URL — в `data/raw/README.md`. Упоминание «сырой файл: data/raw/…»
+в записи означает локальную копию автора, а не файл репозитория. Код и тесты эти копии не читают.
+
+| Файл | Записи |
+|---|---|
+| `fao56_chapter3_x0490e07.htm` | S084 |
+| `fao56_chapter4_x0490e08.htm` | S085 |
+| `fao56_chapter6_x0490e0b.htm` | S065–S072, S087 |
+| `fao56_annex2_x0490e0j.htm` | S086 |
+| `fao_s2022e08_irrigation_water_needs_ch4.htm` | S082 |
+| `fao_t7202e08_annex1_irrigation_efficiencies.htm` | S073 |
+| `cawater_syrdarya_water_kb.htm` | S075 |
+| `cawater_yearbook2020_02_ru.htm` … `cawater_yearbook2024_02_ru.htm` | S076–S080 |
+| `cawater_saniiri80_8_nabiev_rice.pdf` | S083 |
+| `siar_mapa_precipitacion_efectiva.pdf` | S090 |
+
 ## Записи
 
 ## S001
