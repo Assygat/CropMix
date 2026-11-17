@@ -83,6 +83,12 @@ PARAMS = {
     "total_area_reduction": ("fraction", 0, 0.5),
     "water_reduction_target": ("fraction", 0, 0.9),
     "food_crop": ("-", 0, 1),
+    # Режим дефицита воды и стресс-тесты (2026-11-17): параметры сценариев, все assumed
+    "min_retained_share": ("fraction", 0, 1),
+    "water_supply_share": ("fraction", 0, 1.5),
+    "climate_delta_t": ("degC", -10, 10),
+    "precip_factor": ("-", 0, 3),
+    "et0_factor": ("-", 0.5, 1.5),
 }
 
 

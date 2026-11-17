@@ -1,0 +1,5 @@
+entity,param,year,measure,value,unit,source,status
+all_crops,et0_factor,,low,0.9,-,"Допущение 2026-11-17 (Монте-Карло): множитель ET0 ±10 % — неопределённость реанализа NASA POWER и формулы PM (ср. ветер NASA ≈ +16 % к станции, docs/limitations.md); не измерение",assumed
+all_crops,et0_factor,,high,1.1,-,"Допущение 2026-11-17 (Монте-Карло): множитель ET0 ±10 %; см. строку low",assumed
+all_crops,precip_factor,,low,0.8,-,"Допущение 2026-11-17 (Монте-Карло): множитель осадков ±20 % — неопределённость осадков реанализа в аридной зоне; не измерение",assumed
+all_crops,precip_factor,,high,1.2,-,"Допущение 2026-11-17 (Монте-Карло): множитель осадков ±20 %; см. строку low",assumed

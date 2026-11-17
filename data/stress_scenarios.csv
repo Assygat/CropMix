@@ -1,0 +1,19 @@
+entity,param,year,measure,value,unit,source,status
+normal,climate_delta_t,,,0,degC,"Стресс-тест 2026-11-17: нормальный год = средний климат NASA POWER 2010–2025 без изменений",assumed
+normal,precip_factor,,,1,-,"Стресс-тест 2026-11-17: осадки без изменений",assumed
+normal,water_supply_share,,,1,fraction,"Стресс-тест 2026-11-17: доступная вода = модельная потребность базовой структуры",assumed
+drought_year,climate_delta_t,,,0,degC,"Стресс-тест 2026-11-17: климат — наблюдённый (реанализ NASA POWER) год 2010–2025 с наибольшей модельной потребностью; температура не меняется",assumed
+drought_year,precip_factor,,,1,-,"Стресс-тест 2026-11-17: осадки этого года без изменений",assumed
+drought_year,water_supply_share,,,0.8,fraction,"Стресс-тест 2026-11-17: доступно 80 % потребности; сочетание с годом-аналогом — допущение, связь стока и климата года не моделируется",assumed
+extreme_heat,climate_delta_t,,,2,degC,"Эксперимент чувствительности 2026-11-17: +2 °C к Tmax и Tmin каждого дня при неизменной относительной влажности; не климатическая проекция",assumed
+extreme_heat,precip_factor,,,1,-,"Эксперимент чувствительности 2026-11-17: осадки без изменений",assumed
+extreme_heat,water_supply_share,,,1,fraction,"Эксперимент чувствительности 2026-11-17: вода без ограничения",assumed
+reduced_water,climate_delta_t,,,0,degC,"Эксперимент чувствительности 2026-11-17: климат средний",assumed
+reduced_water,precip_factor,,,1,-,"Эксперимент чувствительности 2026-11-17: осадки без изменений",assumed
+reduced_water,water_supply_share,,,0.7,fraction,"Эксперимент чувствительности 2026-11-17: доступно 70 % потребности базовой структуры; не прогноз",assumed
+reduced_precip,climate_delta_t,,,0,degC,"Эксперимент чувствительности 2026-11-17: климат средний",assumed
+reduced_precip,precip_factor,,,0.7,-,"Эксперимент чувствительности 2026-11-17: суточные осадки × 0.7 (−30 %); не климатическая проекция",assumed
+reduced_precip,water_supply_share,,,1,fraction,"Эксперимент чувствительности 2026-11-17: вода без ограничения",assumed
+combined,climate_delta_t,,,2,degC,"Эксперимент чувствительности 2026-11-17: сочетание +2 °C, осадки −30 % и 70 % воды; сочетание крайних допущений, не вероятностное",assumed
+combined,precip_factor,,,0.7,-,"Эксперимент чувствительности 2026-11-17: осадки × 0.7",assumed
+combined,water_supply_share,,,0.7,fraction,"Эксперимент чувствительности 2026-11-17: доступно 70 % потребности базовой структуры",assumed

@@ -108,6 +108,11 @@ def main() -> int:
     for r in ranking.itertuples():
         print(f"  {r.rank}. {r.parameter:22s} {r.p_low} … {r.p_high}: {r.river_low_m3 / 1e9:.2f}–{r.river_high_m3 / 1e9:.2f} км³ "
               f"(размах {r.river_swing_km3:.2f} км³, {r.river_swing_pct_of_base:.1f} %)")
+
+    # Decision Lab (2026-11-17): расширенный оптимизатор, режим дефицита, стресс-тесты, неопределённость,
+    # проверка входов. Отдельные файлы outputs/ и web/data/planner.js; результаты выше не меняются.
+    from src import decision_support
+    decision_support.run(tables)
     return 0
 
 
