@@ -3,433 +3,364 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#07131D">
 <title>How CropMix Twin Works</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;1,9..144,500&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
-/* Layout: animated river-to-field board on the left, stage list and model readout on the right, parts index below.
-   Single deliberate dark look matching the CropMix Twin website (night-blue water palette). */
+/* Layout: full-width side-view cross-section (river → canal → fields → soil → air) on top,
+   horizontal stage rail under it, then narrative + key-figure chart side by side, then a ledger of every number. */
 :root{
-  --bg:#07131D; --surface:#0F2231; --surface2:#132B3D; --fg:#E8F1F7; --muted:#9DB3C4; --line:#21405A;
-  --accent:#5AA9FF; --accent-fg:#04121F; --accent-soft:#12324E;
-  --ok-bg:#123A2A; --ok-fg:#8FE0B0; --warn-bg:#3E2E10; --warn-fg:#F3C873; --info-bg:#1D2B52; --info-fg:#B7C6FF;
-  --font-head:"Fraunces",Georgia,serif; --font-body:"Manrope","Segoe UI",system-ui,sans-serif; --font-mono:"JetBrains Mono",Consolas,monospace;
-  color-scheme:dark;
+  --bg:#EEF2EC; --surface:#FFFFFF; --ink:#14251E; --muted:#56685F; --line:#D3DDD5;
+  --river:#1F5FBF; --river-soft:#DCE8F8; --crop:#3E8E41; --heat:#D9822B; --loss:#A8502A;
+  --sky1:#CFE3F2; --sky2:#EEF4F2; --soil1:#8A6A45; --soil2:#5E4630; --ground:#B39367;
+  --ok-bg:#DDF0DF; --ok-fg:#1E5B25; --warn-bg:#FBEBD3; --warn-fg:#7A4A08; --info-bg:#DFE8F8; --info-fg:#1B3F7D;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif; --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif; --mono:"IBM Plex Mono",Consolas,monospace;
 }
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1613; --surface:#16211C; --ink:#E6EEE8; --muted:#9FB2A7; --line:#2A3A32;
+  --river:#5C9BF0; --river-soft:#1A2B44; --crop:#6CC16F; --heat:#F0A24E; --loss:#D9784B;
+  --sky1:#1B3046; --sky2:#14211D; --soil1:#5E4A33; --soil2:#3A2C1F; --ground:#7D6544;
+  --ok-bg:#183522; --ok-fg:#9BE0A4; --warn-bg:#3A2B12; --warn-fg:#F2C77E; --info-bg:#1B2A47; --info-fg:#B4C9F5; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1613; --surface:#16211C; --ink:#E6EEE8; --muted:#9FB2A7; --line:#2A3A32;
+  --river:#5C9BF0; --river-soft:#1A2B44; --crop:#6CC16F; --heat:#F0A24E; --loss:#D9784B;
+  --sky1:#1B3046; --sky2:#14211D; --soil1:#5E4A33; --soil2:#3A2C1F; --ground:#7D6544;
+  --ok-bg:#183522; --ok-fg:#9BE0A4; --warn-bg:#3A2B12; --warn-fg:#F2C77E; --info-bg:#1B2A47; --info-fg:#B4C9F5; color-scheme:dark}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.5;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px}
-.wrap{max-width:1180px;margin:0 auto}
-.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
-h1{font-family:var(--font-head);font-weight:600;font-size:clamp(30px,5vw,46px);line-height:1.08;margin:8px 0 10px;text-wrap:balance}
-h1 em{font-style:italic;font-weight:500;color:var(--accent)}
-h2{font-family:var(--font-head);font-weight:600;font-size:21px;line-height:1.2;margin:0}
-.lead{max-width:66ch;color:var(--muted);margin:0 0 22px}
-.grid{display:grid;gap:20px;grid-template-columns:minmax(0,1fr)}
-@media (min-width:960px){.grid{grid-template-columns:minmax(0,600px) minmax(0,1fr);align-items:start}}
-.col{display:flex;flex-direction:column;gap:14px;min-width:0}
-.sheet{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#0B1C2A}
-#sch{display:block;width:100%;height:auto;aspect-ratio:680/600;max-width:100%}
-#sch text{font-family:var(--font-body)}
-#sch .th{font-size:13px;font-weight:700}
-#sch .ts{font-size:11.5px;font-weight:600}
-#sch .mono{font-family:var(--font-mono);font-size:12px}
-#sch .node rect.box{transition:fill .5s,stroke .5s}
-#sch .node.on rect.box{fill:#173A5C;stroke:#5AA9FF}
-#sch .node.done rect.box{stroke:#2E5E86}
-#sch .node .nb{transition:fill .5s}
-#sch .node.on .nb,#sch .node.done .nb{fill:#5AA9FF}
-#sch .flow{stroke-dasharray:4 5;animation:fl .7s linear infinite}
-@keyframes fl{to{stroke-dashoffset:-9}}
-#sch .sig{opacity:0;stroke-dasharray:3 5;animation:fl .6s linear infinite;transition:opacity .5s}
-#sch.s-data .sig{opacity:1}
-#sch #rays{transform-box:fill-box;transform-origin:center;animation:rot 14s linear infinite}
-@keyframes rot{to{transform:rotate(360deg)}}
-#sch #sunc{transition:fill .8s}
-#sch.s-hot #sunc{fill:#FF8A4C}
-#sch .pl{opacity:0;fill:none;stroke:#5AA9FF;stroke-width:2.5;transform-box:fill-box;transform-origin:center}
-#sch .pl.show{animation:pls 1.1s ease-out infinite}
-@keyframes pls{0%{opacity:1;transform:scale(.97)}100%{opacity:0;transform:scale(1.08)}}
-#sch .strip{transition:y 1.6s cubic-bezier(.4,0,.2,1),height 1.6s cubic-bezier(.4,0,.2,1)}
-#sch .slab{transition:y 1.6s cubic-bezier(.4,0,.2,1),opacity .5s}
-#sch .badge{opacity:0;transition:opacity .5s}
-#sch.s-kc .kc,#sch.s-tag .tag,#sch.s-perha .perha{opacity:1}
-#sch #river{transition:stroke-width 1.4s}
-#sch .card{opacity:0;transition:opacity .6s}
-#sch .card.show{opacity:1}
-#sch #gauge{transition:opacity .6s}
-#sch.paused *{animation-play-state:paused !important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:30px 60px}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--river)}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(30px,5.4vw,54px);line-height:1.02;letter-spacing:-.02em;margin:6px 0 10px;text-wrap:balance;max-width:20ch}
+.lead{max-width:68ch;color:var(--muted);margin:0}
+h2{font-family:var(--display);font-weight:800;font-size:clamp(22px,3vw,30px);line-height:1.1;letter-spacing:-.01em;margin:0;text-wrap:balance}
+h3{font-family:var(--display);font-weight:600;font-size:18px;margin:0}
 
-.ctl{display:flex;flex-wrap:wrap;gap:8px}
-.btn{min-height:44px;padding:0 18px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);font:inherit;font-weight:600;cursor:pointer}
-.btn:hover{border-color:var(--accent)}
-.btn.main{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
-.btn:focus-visible,.st:focus-visible,.chip:focus-visible,.lk:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.scene{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.scene-scroll{overflow-x:auto}
+#sv{display:block;width:100%;min-width:640px;height:auto;aspect-ratio:1000/380}
+#sv text{font-family:var(--body)}
+#sv .lb{font-size:13px;font-weight:600;fill:var(--ink)}
+#sv .sm{font-size:12px;fill:var(--muted)}
+#sv .nm{font-family:var(--mono);font-size:12px;fill:var(--ink)}
+#sv .plants{transition:opacity .45s}
+#sv .fade{transition:opacity .5s}
+#sv .hide{opacity:0}
+#sv #rw{transition:y 1.4s,height 1.4s}
+#sv .dash{stroke-dasharray:4 6;animation:mv .8s linear infinite}
+@keyframes mv{to{stroke-dashoffset:-10}}
+#sv .wave{animation:wv 2.4s ease-in-out infinite}
+@keyframes wv{50%{transform:translateY(-6px)}}
+#sv #sunDisc{transition:fill .8s}
+#sv.hot #sunDisc{fill:#E4572E}
+#sv #thermo{transition:height 1.4s,y 1.4s}
+#sv.paused *{animation-play-state:paused!important}
 
-.stages{list-style:none;margin:0;padding:0;display:grid;gap:6px}
-.st{display:flex;gap:12px;align-items:flex-start;width:100%;min-height:44px;text-align:left;padding:11px 13px;border:1px solid var(--line);border-radius:11px;background:var(--surface);color:var(--fg);font:inherit;cursor:pointer}
-.st:hover{border-color:#2E5E86}
-.st .num{flex:none;width:26px;height:26px;border-radius:13px;background:var(--line);display:grid;place-items:center;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
-.st .tx{min-width:0}
-.st b{font-weight:700}
-.st .ph{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:1px}
-.st .sd{display:none;color:var(--muted);font-size:14px;margin-top:5px}
-.st[aria-current="step"]{border-color:var(--accent);background:var(--accent-soft)}
-.st[aria-current="step"] .num{background:var(--accent);color:var(--accent-fg)}
-.st[aria-current="step"] .sd{display:block}
+.rail{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:0 6px}
+.ph{grid-row:1;font-family:var(--mono);font-size:11px;color:var(--muted);border-top:2px solid var(--line);padding-top:6px;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ph.on{border-color:var(--river);color:var(--river)}
+.stp{grid-row:2;display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:44px;padding:8px 8px 9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;text-align:left;cursor:pointer;border-radius:4px;min-width:0}
+.stp .n{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.stp .t{font-size:13px;font-weight:600;line-height:1.25}
+.stp[aria-current="step"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.stp[aria-current="step"] .n{color:var(--bg);opacity:.75}
+.stp:focus-visible,.btn:focus-visible,a:focus-visible{outline:2px solid var(--river);outline-offset:2px}
+@media (max-width:760px){.rail{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.ph{display:none}.stp{grid-row:auto}}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.btn{min-height:44px;padding:0 16px;border:1px solid var(--ink);background:transparent;color:var(--ink);font:inherit;font-weight:600;cursor:pointer;border-radius:4px}
+.btn.solid{background:var(--ink);color:var(--bg)}
+.prog{flex:1;min-width:120px;height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--river)}
 
-.panel{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:15px 17px}
-.phead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-.tag-s{font-size:12px;color:var(--muted)}
-.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
-@media (max-width:460px){.tiles{grid-template-columns:minmax(0,1fr)}}
-.tile{background:var(--surface2);border-radius:10px;padding:10px 12px;min-width:0}
-.tile .l{font-size:12px;color:var(--muted)}
-.tile .v{font-family:var(--font-mono);font-size:17px;margin-top:3px;font-variant-numeric:tabular-nums}
-.bd{display:inline-block;margin-top:6px;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700}
-.bd.ok{background:var(--ok-bg);color:var(--ok-fg)}
-.bd.warn{background:var(--warn-bg);color:var(--warn-fg)}
-.bd.info{background:var(--info-bg);color:var(--info-fg)}
-.nbar{margin-top:10px;padding:9px 12px;border-radius:10px;background:var(--accent-soft);color:var(--fg);font-size:13.5px}
-.fine{font-size:12px;color:var(--muted);margin:10px 0 0}
-.fine a,.note a{color:var(--accent)}
+.duo{display:grid;gap:18px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:880px){.duo{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}}
+.story{display:flex;flex-direction:column;gap:12px;min-width:0}
+.story .of{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.story p{margin:0;max-width:62ch}
+.see{border-left:3px solid var(--river);padding:4px 0 4px 12px;color:var(--muted);font-size:14.5px}
+.see b{color:var(--ink)}
+.fig{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px 18px;min-width:0}
+.fig .cap{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.big{font-family:var(--display);font-weight:800;font-size:44px;line-height:1;letter-spacing:-.02em;margin:8px 0 4px;font-variant-numeric:tabular-nums}
+.big small{font-size:20px;font-weight:600;color:var(--muted)}
+.fig svg{display:block;width:100%;height:auto;margin-top:10px}
+.fig svg text{font-family:var(--body);font-size:12px}
+.pill{display:inline-block;padding:1px 9px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.pill.real{background:var(--ok-bg);color:var(--ok-fg)}
+.pill.assumed{background:var(--warn-bg);color:var(--warn-fg)}
+.pill.model{background:var(--info-bg);color:var(--info-fg)}
 
-.parts{margin-top:34px;display:flex;flex-direction:column;gap:12px}
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{min-height:40px;padding:0 13px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--fg);font:inherit;font-size:14px;cursor:pointer}
-.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg);font-weight:600}
-.detail{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:15px 17px;max-width:800px}
-.detail h3{font-family:var(--font-head);font-weight:600;font-size:19px;margin:0 0 4px}
-.row{display:grid;grid-template-columns:110px minmax(0,1fr);gap:8px;margin-top:8px;font-size:14px}
-.row b{font-weight:700;color:var(--muted);font-size:13px}
-.ev{display:inline-block;padding:1px 9px;border-radius:999px;font-size:12px;font-weight:700}
-.ev.real{background:var(--ok-bg);color:var(--ok-fg)}
-.ev.assumed{background:var(--warn-bg);color:var(--warn-fg)}
-.ev.model{background:var(--info-bg);color:var(--info-fg)}
-.lks{display:flex;flex-wrap:wrap;gap:6px}
-.lk{min-height:34px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface2);color:var(--fg);font:inherit;font-size:13px;cursor:pointer}
-.note{margin-top:28px;max-width:76ch;font-size:13px;color:var(--muted)}
-@media (prefers-reduced-motion: reduce){#sch *{animation:none !important;transition:none !important}}
+.ledger h2{margin-bottom:4px}
+.ledger p{margin:0 0 12px;color:var(--muted);max-width:70ch}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:14px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--muted)}
+td.v{font-family:var(--mono);white-space:nowrap;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+.foot{font-size:13px;color:var(--muted);max-width:76ch}
+.foot a,.story a{color:var(--river)}
+@media (prefers-reduced-motion: reduce){#sv *{animation:none!important;transition:none!important}}
 </style>
 
 </head>
 <body>
 <div class="wrap">
 <header>
-  <div class="eyebrow">Xylem · Water Quantity · Kyzylorda Region, Kazakhstan</div>
-  <h1>How does CropMix Twin turn <em>river water</em> into a sowing plan?</h1>
-  <p class="lead">Weather data becomes the water each crop needs. Losses in fields and canals turn that need into water taken from the Syr Darya. When the river runs short, an optimiser picks the crop mix that keeps the most farmland working. Pick a stage or just watch.</p>
+  <div class="kicker">XYLEM 2026 · WATER QUANTITY · KYZYLORDA, KAZAKHSTAN</div>
+  <h1>Follow one season of water through CropMix Twin</h1>
+  <p class="lead">A side view of the lower Syr Darya: the river, the canal, the fields and the soil below them. Eight stages show how the model turns weather into crop water need, need into river withdrawal, and a short water year into a sowing plan.</p>
 </header>
 
-<div class="grid">
-<div class="col">
-<div class="sheet">
-<svg id="sch" viewBox="0 0 680 600" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animated diagram of the CropMix Twin model">
-<title>CropMix Twin model animation</title>
-<desc>Weather data flows into the model. Water leaves the Syr Darya through a canal, part of it is lost in the canal and in the fields, and the rest is used by rice, fodder and other crops. In a water-short year the optimiser changes the crop areas.</desc>
+<section class="scene" aria-label="Animated cross-section">
+<div class="scene-scroll">
+<svg id="sv" viewBox="0 0 1000 380" role="img" aria-label="Side view of the river, canal, fields and soil, animated by stage">
 <defs>
-  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#10304B"/><stop offset="1" stop-color="#0B1C2A"/></linearGradient>
-  <linearGradient id="land" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2A2A20"/><stop offset="1" stop-color="#211F17"/></linearGradient>
-  <radialGradient id="sung"><stop offset="0" stop-color="#FFD66B" stop-opacity=".55"/><stop offset="1" stop-color="#FFD66B" stop-opacity="0"/></radialGradient>
+  <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--sky1)"/><stop offset="1" style="stop-color:var(--sky2)"/></linearGradient>
+  <linearGradient id="gSoil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--soil1)"/><stop offset="1" style="stop-color:var(--soil2)"/></linearGradient>
+  <clipPath id="chan"><path d="M28 214 L64 318 L136 318 L172 214 Z"/></clipPath>
 </defs>
-<rect x="0" y="0" width="680" height="600" fill="#0B1C2A"/>
-<rect x="0" y="0" width="410" height="185" fill="url(#sky)"/>
-<rect x="0" y="185" width="410" height="300" fill="url(#land)"/>
-<path d="M0 186 Q60 176 120 184 T250 182 T410 186" fill="none" stroke="#5B5238" stroke-width="2"/>
+<rect x="0" y="0" width="1000" height="214" fill="url(#gSky)"/>
+<rect x="0" y="214" width="1000" height="166" fill="url(#gSoil)"/>
+<rect x="0" y="212" width="1000" height="5" style="fill:var(--ground)"/>
+<path d="M0 250 H1000 M0 290 H1000 M0 330 H1000" stroke="#000" stroke-opacity=".08" stroke-dasharray="2 8"/>
+<text class="sm" x="988" y="246" text-anchor="end" style="fill:#F3E6CF">root zone</text>
+<text class="sm" x="988" y="366" text-anchor="end" style="fill:#F3E6CF">deep soil</text>
 
-<rect x="14" y="12" width="652" height="34" rx="8" fill="#12324E"/>
-<text class="th" x="340" y="29" text-anchor="middle" dominant-baseline="central" fill="#E8F1F7">CropMix Twin · from weather to sowing plan</text>
-
-<circle cx="66" cy="104" r="46" fill="url(#sung)"/>
-<g id="rays" stroke="#FFD66B" stroke-width="2.5" stroke-linecap="round">
-  <path d="M66 70v-9M66 138v9M32 104h-9M100 104h9M42 80l-6-6M90 128l6 6M42 128l-6 6M90 80l6-6"/>
+<!-- sun + heat -->
+<g transform="translate(905 66)"><circle r="34" fill="#F7C948" opacity=".25"/><circle id="sunDisc" r="22" fill="#F7C948"/></g>
+<g id="heat" class="fade hide" fill="none" stroke="var(--heat)" stroke-width="2" stroke-linecap="round">
+  <path class="wave" d="M860 120 q8 -8 16 0 t16 0 t16 0"/><path class="wave" style="animation-delay:.6s" d="M820 140 q8 -8 16 0 t16 0 t16 0"/><path class="wave" style="animation-delay:1.2s" d="M880 150 q8 -8 16 0 t16 0 t16 0"/>
 </g>
-<circle id="sunc" cx="66" cy="104" r="20" fill="#FFD66B"/>
-<text class="ts" x="66" y="166" text-anchor="middle" fill="#F3D88A">Sun &amp; heat</text>
-
-<path d="M196 160V102M184 160h24M196 102l-14-8M196 102l14-8" stroke="#9DB3C4" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-<circle cx="196" cy="98" r="4" fill="#9DB3C4"/>
-<text class="ts" x="196" y="174" text-anchor="middle" fill="#9DB3C4">Kyzylorda station</text>
-
-<g transform="translate(318 82)">
-  <rect x="-10" y="-8" width="20" height="16" rx="3" fill="#C9D6E2"/>
-  <rect x="-38" y="-6" width="24" height="12" fill="#3B6EA8" stroke="#C9D6E2" stroke-width="1"/>
-  <rect x="14" y="-6" width="24" height="12" fill="#3B6EA8" stroke="#C9D6E2" stroke-width="1"/>
-  <path d="M0 8v8" stroke="#C9D6E2" stroke-width="2"/>
-</g>
-<text class="ts" x="318" y="118" text-anchor="middle" fill="#C9D6E2">NASA POWER</text>
-<text class="ts" x="318" y="132" text-anchor="middle" fill="#9DB3C4">daily 2010–2025</text>
-
-<g fill="none" stroke="#5AA9FF" stroke-width="1.6">
-  <path class="sig" d="M356 84 C390 80 410 76 440 76"/>
-  <path class="sig" d="M206 96 C260 60 380 60 440 70"/>
-  <path class="sig" d="M88 92 C150 40 360 50 440 66"/>
+<g id="thermoG" class="fade hide">
+  <rect x="954" y="104" width="12" height="76" rx="6" fill="#fff" stroke="var(--muted)"/>
+  <rect id="thermo" x="957" y="150" width="6" height="27" rx="3" fill="#E4572E"/>
+  <circle cx="960" cy="186" r="9" fill="#E4572E"/>
+  <text class="nm" x="944" y="126" text-anchor="end">+2 °C</text>
 </g>
 
-<path id="river" d="M48 186 C70 230 40 270 70 310 S110 380 84 430 S70 470 92 486" fill="none" stroke="#2F7FD0" stroke-width="22" stroke-linecap="round"/>
-<path class="flow" d="M48 186 C70 230 40 270 70 310 S110 380 84 430 S70 470 92 486" fill="none" stroke="#8CC6F5" stroke-width="2" opacity=".55"/>
-<text class="th" x="26" y="262" fill="#8CC6F5" transform="rotate(-74 26 262)">Syr Darya</text>
-
-<path d="M84 300 H190 M190 204 V470" fill="none" stroke="#2A6CB0" stroke-width="7" stroke-linecap="round"/>
-<rect x="76" y="291" width="18" height="18" rx="3" fill="#C9A24B" stroke="#8A6D2A"/>
-<text class="ts" x="112" y="290" fill="#8CC6F5">canal</text>
-
-<rect x="200" y="200" width="196" height="276" rx="6" fill="#1A1A12" stroke="#3A3626"/>
-<g id="strips">
-  <rect id="sR" class="strip" x="204" y="204" width="188" height="115" rx="4" fill="#5CC48E"/>
-  <rect id="sF" class="strip" x="204" y="321" width="188" height="98" rx="4" fill="#3E9A57"/>
-  <rect id="sO" class="strip" x="204" y="421" width="188" height="50" rx="4" fill="#E2C35E"/>
-  <rect id="sX" class="strip" x="204" y="472" width="188" height="0" rx="4" fill="#C9B98A"/>
+<!-- satellite + station -->
+<g transform="translate(120 46)">
+  <rect x="-9" y="-7" width="18" height="14" rx="2" fill="#9AA8B4"/><rect x="-33" y="-5" width="21" height="10" fill="#2F5C93"/><rect x="12" y="-5" width="21" height="10" fill="#2F5C93"/>
 </g>
-<g>
-  <text id="lR" class="th slab" x="214" y="226" fill="#06251A">Rice</text>
-  <text id="lF" class="th slab" x="214" y="343" fill="#04170C">Fodder (alfalfa)</text>
-  <text id="lO" class="th slab" x="214" y="443" fill="#2E2408">6 other groups</text>
-  <text id="lX" class="th slab" x="214" y="470" fill="#3A3220" opacity="0">Left unsown</text>
-  <text id="aR" class="ts slab mono" x="386" y="226" text-anchor="end" fill="#06251A">81,697 ha</text>
-  <text id="aF" class="ts slab mono" x="386" y="343" text-anchor="end" fill="#04170C">70,100 ha</text>
-  <text id="aO" class="ts slab mono" x="386" y="443" text-anchor="end" fill="#2E2408">36,297 ha</text>
-  <text id="aX" class="ts slab mono" x="386" y="470" text-anchor="end" fill="#3A3220" opacity="0">48,959 ha</text>
-</g>
-<g class="badge kc">
-  <rect x="296" y="256" width="90" height="22" rx="11" fill="#04121F" opacity=".78"/><text class="ts" x="341" y="267" text-anchor="middle" dominant-baseline="central" fill="#E8F1F7">Kc mid 1.20</text>
-  <rect x="296" y="360" width="90" height="22" rx="11" fill="#04121F" opacity=".78"/><text class="ts" x="341" y="371" text-anchor="middle" dominant-baseline="central" fill="#E8F1F7">Kc mid 0.95</text>
-</g>
-<g class="badge perha">
-  <rect x="262" y="256" width="124" height="22" rx="11" fill="#04121F" opacity=".82"/><text class="ts mono" x="324" y="267" text-anchor="middle" dominant-baseline="central" fill="#E8F1F7">43,800 m³/ha</text>
-  <rect x="262" y="360" width="124" height="22" rx="11" fill="#04121F" opacity=".82"/><text class="ts mono" x="324" y="371" text-anchor="middle" dominant-baseline="central" fill="#E8F1F7">39,200 m³/ha</text>
-</g>
-<g class="badge tag">
-  <rect x="286" y="290" width="100" height="22" rx="11" fill="#123A2A"/><text class="ts" x="336" y="301" text-anchor="middle" dominant-baseline="central" fill="#8FE0B0">area: real</text>
-  <rect x="98" y="312" width="86" height="22" rx="11" fill="#3E2E10"/><text class="ts" x="141" y="323" text-anchor="middle" dominant-baseline="central" fill="#F3C873">eff.: assumed</text>
-  <rect x="232" y="140" width="108" height="22" rx="11" fill="#1D2B52"/><text class="ts" x="286" y="151" text-anchor="middle" dominant-baseline="central" fill="#B7C6FF">1 mm·ha = 10 m³</text>
+<text class="sm" x="120" y="76" text-anchor="middle">NASA POWER · daily 2010–2025</text>
+<path d="M262 212 V160 M252 212 h20 M262 160 l-12 -7 M262 160 l12 -7" stroke="var(--muted)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+<text class="sm" x="262" y="190" text-anchor="end" dx="-16">Kyzylorda station</text>
+<g id="sig" class="fade hide" fill="none" stroke="var(--river)" stroke-width="1.8">
+  <path class="dash" d="M150 50 C 190 50 210 60 214 92"/><path class="dash" d="M262 150 C 262 135 250 125 240 120"/>
+  <rect x="196" y="94" width="58" height="26" rx="4" style="fill:var(--surface);stroke:var(--river)"/><text class="lb" x="225" y="112" text-anchor="middle" style="fill:var(--river)">model</text>
 </g>
 
+<!-- river cross-section -->
+<path d="M28 214 L64 318 L136 318 L172 214" fill="none" stroke="#5E4630" stroke-width="3"/>
+<g clip-path="url(#chan)"><rect id="rw" x="20" y="226" width="160" height="100" fill="var(--river)" opacity=".85"/></g>
+<path d="M44 236 q8 -4 16 0 t16 0 t16 0 t16 0 t16 0" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.5" class="wave"/>
+<text class="lb" x="100" y="345" text-anchor="middle" style="fill:#F3E6CF">Syr Darya</text>
+<text class="sm" x="100" y="362" text-anchor="middle" style="fill:#E5D4B8">river, cross-section</text>
+<text id="rLvl" class="nm" x="100" y="200" text-anchor="middle">normal flow</text>
+
+<!-- canal trough -->
+<rect x="168" y="212" width="790" height="13" rx="2" fill="var(--river-soft)" stroke="var(--river)" stroke-opacity=".5"/>
+<rect x="166" y="206" width="9" height="20" fill="#6B5A3A"/>
+<text class="sm" x="232" y="240" text-anchor="middle" style="fill:#F3E6CF">canal</text>
+
+<!-- field segments -->
+<g id="segs"></g>
+<g id="plantsG"></g>
+<g id="segLabels"></g>
+<g id="tags" class="fade hide"></g>
 <g id="pt"></g>
-
-<g id="gauge">
-  <rect x="14" y="498" width="384" height="90" rx="10" fill="#0F2231" stroke="#21405A"/>
-  <text class="ts" x="28" y="517" fill="#9DB3C4">River water for the season, km³ (model)</text>
-  <text id="gTxt" class="ts" x="384" y="517" text-anchor="end" fill="#E8F1F7"></text>
-  <rect x="28" y="528" width="356" height="16" rx="4" fill="#1A3247"/>
-  <rect id="gNeed" x="28" y="528" width="0" height="16" rx="4" fill="#3B8FE0" style="transition:width 1.4s"/>
-  <line id="gAvail" x1="0" y1="522" x2="0" y2="550" stroke="#F3C873" stroke-width="3" opacity="0" style="transition:all 1.4s"/>
-  <text class="ts mono" x="28" y="562" fill="#9DB3C4">0</text><text class="ts mono" x="117" y="562" text-anchor="middle" fill="#9DB3C4">2</text><text class="ts mono" x="206" y="562" text-anchor="middle" fill="#9DB3C4">4</text><text class="ts mono" x="295" y="562" text-anchor="middle" fill="#9DB3C4">6</text><text class="ts mono" x="384" y="562" text-anchor="end" fill="#9DB3C4">8</text>
-  <text id="gSub" class="ts" x="28" y="579" fill="#9DB3C4"></text>
-</g>
-<g id="hist" class="card">
-  <rect x="14" y="498" width="384" height="90" rx="10" fill="#0F2231" stroke="#21405A"/>
-  <text class="ts" x="28" y="517" fill="#9DB3C4">2,000 uncertainty runs · river water, km³</text>
-  <g id="hbars"></g>
-  <text class="ts mono" x="28" y="582" fill="#9DB3C4">5</text><text class="ts mono" x="384" y="582" text-anchor="end" fill="#9DB3C4">10</text>
-  <text class="ts" x="206" y="582" text-anchor="middle" fill="#E8F1F7">bright bars: 6.0–8.75 (≈ middle 90 %)</text>
-</g>
-<g id="res" class="card">
-  <rect x="210" y="122" width="190" height="66" rx="9" fill="#04121F" stroke="#5AA9FF"/>
-  <text class="ts" x="222" y="140" fill="#9DB3C4">Land kept at 70 % water</text>
-  <text class="th mono" x="222" y="160" fill="#8FE0B0">74.0 % optimised</text>
-  <text class="ts mono" x="222" y="178" fill="#F3C873">70.0 % equal cut</text>
-</g>
-
-<g id="pipe">
-  <path class="flow" d="M550 98V116M550 158V176M550 218V236M550 278V296M550 338V356M550 398V416M550 458V476" fill="none" stroke="#2E5E86" stroke-width="2"/>
-  <g class="node" id="n1"><rect class="box" x="440" y="56" width="220" height="42" rx="9" fill="#0F2231" stroke="#21405A" stroke-width="1.5"/><circle class="nb" cx="460" cy="77" r="11" fill="#21405A"/><text class="ts" x="460" y="77" text-anchor="middle" dominant-baseline="central" fill="#04121F">1</text><text class="ts" x="478" y="77" dominant-baseline="central" fill="#E8F1F7">Climate &amp; crop data</text></g>
-  <g class="node" id="n2"><rect class="box" x="440" y="116" width="220" height="42" rx="9" fill="#0F2231" stroke="#21405A" stroke-width="1.5"/><circle class="nb" cx="460" cy="137" r="11" fill="#21405A"/><text class="ts" x="460" y="137" text-anchor="middle" dominant-baseline="central" fill="#04121F">2</text><text class="ts" x="478" y="137" dominant-baseline="central" fill="#E8F1F7">Checks, units, labels</text></g>
-  <g class="node" id="n3"><rect class="box" x="440" y="176" width="220" height="42" rx="9" fill="#0F2231" stroke="#21405A" stroke-width="1.5"/><circle class="nb" cx="460" cy="197" r="11" fill="#21405A"/><text class="ts" x="460" y="197" text-anchor="middle" dominant-baseline="central" fill="#04121F">3</text><text class="ts" x="478" y="197" dominant-baseline="central" fill="#E8F1F7">Reference ET₀ (FAO-56)</text></g>
-  <g class="node" id="n4"><rect class="box" x="440" y="236" width="220" height="42" rx="9" fill="#0F2231" stroke="#21405A" stroke-width="1.5"/><circle class="nb" cx="460" cy="257" r="11" fill="#21405A"/><text class="ts" x="460" y="257" text-anchor="middle" dominant-baseline="central" fill="#04121F">4</text><text class="ts" x="478" y="257" dominant-baseline="central" fill="#E8F1F7">Crop water need ETc</text></g>
-  <g class="node" id="n5"><rect class="box" x="440" y="296" width="220" height="42" rx="9" fill="#0F2231" stroke="#21405A" stroke-width="1.5"/><circle class="nb" cx="460" cy="317" r="11" fill="#21405A"/><text class="ts" x="460" y="317" text-anchor="middle" dominant-baseline="central" fill="#04121F">5</text><text class="ts" x="478" y="317" dominant-baseline="central" fill="#E8F1F7">River withdrawal</text></g>
-  <g class="node" id="n6"><rect class="box" x="440" y="356" width="220" height="42" rx="9" fill="#0F2231" stroke="#21405A" stroke-width="1.5"/><circle class="nb" cx="460" cy="377" r="11" fill="#21405A"/><text class="ts" x="460" y="377" text-anchor="middle" dominant-baseline="central" fill="#04121F">6</text><text class="ts" x="478" y="377" dominant-baseline="central" fill="#E8F1F7">LP optimiser</text></g>
-  <g class="node" id="n7"><rect class="box" x="440" y="416" width="220" height="42" rx="9" fill="#0F2231" stroke="#21405A" stroke-width="1.5"/><circle class="nb" cx="460" cy="437" r="11" fill="#21405A"/><text class="ts" x="460" y="437" text-anchor="middle" dominant-baseline="central" fill="#04121F">7</text><text class="ts" x="478" y="437" dominant-baseline="central" fill="#E8F1F7">Scenarios &amp; uncertainty</text></g>
-  <g class="node" id="n8"><rect class="box" x="440" y="476" width="220" height="42" rx="9" fill="#0F2231" stroke="#21405A" stroke-width="1.5"/><circle class="nb" cx="460" cy="497" r="11" fill="#21405A"/><text class="ts" x="460" y="497" text-anchor="middle" dominant-baseline="central" fill="#04121F">8</text><text class="ts" x="478" y="497" dominant-baseline="central" fill="#E8F1F7">Decision Lab (browser)</text></g>
-  <rect id="pN" class="pl" x="436" y="52" width="228" height="50" rx="12"/>
-</g>
-
-<g>
-  <circle cx="446" cy="548" r="4.5" fill="#8CC6F5"/><text class="ts" x="456" y="548" dominant-baseline="central" fill="#C9D6E2">River water</text>
-  <circle cx="550" cy="548" r="4.5" fill="#C77B3F"/><text class="ts" x="560" y="548" dominant-baseline="central" fill="#C9D6E2">Lost on the way</text>
-  <circle cx="446" cy="572" r="4.5" fill="#E8F1F7"/><text class="ts" x="456" y="572" dominant-baseline="central" fill="#C9D6E2">Used by crops</text>
-  <circle cx="550" cy="572" r="4.5" fill="#F3C873"/><text class="ts" x="560" y="572" dominant-baseline="central" fill="#C9D6E2">Heat (ET₀)</text>
-</g>
 </svg>
 </div>
-<div class="ctl">
-  <button class="btn" id="pv" type="button">Previous</button>
-  <button class="btn main" id="pp" type="button">Pause</button>
-  <button class="btn" id="nx" type="button">Next</button>
-</div>
-</div>
-
-<div class="col">
-  <ol class="stages" id="scs" aria-label="Stages"></ol>
-  <section class="panel" aria-label="Model readout">
-    <div class="phead"><h2>Model readout</h2><span class="tag-s" id="scen">Normal year · 2025 crop mix</span></div>
-    <div class="tiles">
-      <div class="tile"><div class="l">River water available</div><div class="v" id="vA">100 %</div><span class="bd ok" id="bA">Normal year</span></div>
-      <div class="tile"><div class="l">River water needed</div><div class="v" id="vN">7.30 km³</div><span class="bd info" id="bN">Model estimate</span></div>
-      <div class="tile"><div class="l">Land in production</div><div class="v" id="vL">188,094 ha</div><span class="bd ok" id="bL">100 %</span></div>
-    </div>
-    <div class="nbar" id="nbar">Every number on this page comes from the project's model outputs or official data.</div>
-    <p class="fine">Model estimates, not field measurements. The model is not validated against a series of measured withdrawals. Try it live in the <a href="planner.html" target="_blank" rel="noopener">Decision Lab</a>.</p>
-  </section>
-</div>
-</div>
-
-<section class="parts" aria-label="Parts index">
-  <h2>Parts of the model</h2>
-  <div class="chips" id="chips"></div>
-  <div class="detail" id="detail" aria-live="polite"></div>
 </section>
 
-<p class="note">How to read the drawing: crop strips are drawn to scale by area (188,094 ha in total; "6 other groups" are wheat, melons, vegetables, oilseeds, potato and other grain). The dots show the direction of water, not real volumes. Model totals are higher than the official irrigation limits (3.2–3.7 km³), so results are best read as shares and changes. Sources and limitations: <a href="evidence.html" target="_blank" rel="noopener">Data &amp; Evidence</a>.</p>
+<nav class="rail" id="rail" aria-label="Stages"></nav>
+<div class="bar">
+  <button class="btn" id="pv" type="button">← Back</button>
+  <button class="btn solid" id="pp" type="button">Pause</button>
+  <button class="btn" id="nx" type="button">Next →</button>
+  <div class="prog" aria-hidden="true"><i id="pg"></i></div>
+</div>
+
+<section class="duo">
+  <div class="story" aria-live="polite">
+    <div class="of" id="sOf"></div>
+    <h2 id="sT"></h2>
+    <p id="sD"></p>
+    <div class="see" id="sS"></div>
+  </div>
+  <div class="fig" id="fig"></div>
+</section>
+
+<section class="ledger" aria-label="Every number on this page">
+  <h2>Every number on this page, and where it comes from</h2>
+  <p>Real means official statistics or measurements. Assumed means a value we chose from the literature and vary in the uncertainty runs. Model means a result of our calculation.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Number</th><th>What it is</th><th>Evidence</th><th>Source</th></tr></thead>
+    <tbody id="lg"></tbody>
+  </table></div>
+</section>
+
+<p class="foot">The crop bands are drawn to scale by area; "other" joins six small groups (wheat, melons, vegetables, oilseeds, potato, other grain). Dots show the direction of water, not real volumes. Model totals are higher than the official irrigation limits of 3.2–3.7 km³, so results are best read as shares and changes. The model is not validated against a series of measured withdrawals. Try the optimiser yourself in the <a href="planner.html" target="_blank" rel="noopener">Decision Lab</a>; sources and limits are on <a href="evidence.html" target="_blank" rel="noopener">Data &amp; Evidence</a>.</p>
 </div>
 
 <script>
-function G(i){return document.getElementById(i);}
-var svg=G('sch'),pt=G('pt'),NS='http://www.w3.org/2000/svg';
-var CL=['s-data','s-hot','s-kc','s-tag','s-perha'];
-var timers=[],cur=0,paused=false,cvr=0,vb=[0,0,680,600],ps=[];
-var stt={river:1,canal:0,et0:0,vapor:0,lossC:.425,lossF:.44};
-var CAM={F:[0,0,680,600],Sky:[0,30,420,371],Fields:[60,170,360,318],Low:[0,230,420,371]};
+var NS='http://www.w3.org/2000/svg';function G(i){return document.getElementById(i);}
+function el(t,a,p){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+var sv=G('sv'),pt=G('pt');
+var X0=300,XW=640,HA=188094.01;
+var BASE={rice:81696.6,fodder:70100,other:36297.41,fallow:0};
+var SHORT={rice:51751.43,fodder:40196.89,other:47186.63,fallow:48959.06};
+var COL={rice:'#5DBB7A',fodder:'#2F7D3E',other:'#D9B54A',fallow:'#C8B48A'};
+var NAME={rice:'Rice',fodder:'Fodder',other:'Other 6 groups',fallow:'Left unsown'};
+var segs={},cur={};
 
-function mk(p){var c=[0];for(var i=1;i<p.length;i++)c[i]=c[i-1]+Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);return{p:p,c:c,L:c[c.length-1]};}
-function pos(R,s){var p=R.p,c=R.c,i=1;while(i<p.length-1&&c[i]<s)i++;var k=(s-c[i-1])/((c[i]-c[i-1])||1);k=Math.max(0,Math.min(1,k));return[p[i-1][0]+(p[i][0]-p[i-1][0])*k,p[i-1][1]+(p[i][1]-p[i-1][1])*k];}
-var RV=mk([[48,186],[60,215],[52,250],[58,280],[70,310],[92,345],[94,380],[84,430],[78,460],[92,486]]);
-var geom={R:[204,115],F:[321,98],O:[421,50],X:[472,0]};
-function canalRoute(){var keys=['R','R','R','R','F','F','F','O','O'];var k=keys[Math.floor(Math.random()*keys.length)];var g=geom[k];if(g[1]<12){k='R';g=geom.R;}var y=g[0]+6+Math.random()*(g[1]-12);var x=214+Math.random()*170;return mk([[80,300],[190,300],[190,y],[x,y]]);}
+/* ---------- field segments and plants ---------- */
+function layout(m){var x=X0,o={};['rice','fodder','other','fallow'].forEach(function(k){var w=m[k]/HA*XW;o[k]=[x,w];x+=w;});return o;}
+var segRaf=0;
+function paintSegs(o){var g=G('segs');['rice','fodder','other','fallow'].forEach(function(k){var r=segs[k];if(!r){r=el('rect',{y:200,height:14,rx:1,fill:COL[k]},g);segs[k]=r;}
+  r.setAttribute('x',o[k][0]+1);r.setAttribute('width',Math.max(0,o[k][1]-2));});}
+function drawSegs(m,ms){var from=cur.rice?cur:layout(m),to=layout(m);cur=to;cancelAnimationFrame(segRaf);
+ if(!ms){paintSegs(to);return;}var t0=performance.now();
+ (function f(t){var k=Math.min(1,(t-t0)/ms),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2,o={};
+  for(var q in to)o[q]=[from[q][0]+(to[q][0]-from[q][0])*e,from[q][1]+(to[q][1]-from[q][1])*e];
+  paintSegs(o);if(k<1)segRaf=requestAnimationFrame(f);})(t0);}
+function plants(){var g=G('plantsG');g.setAttribute('class','plants');g.textContent='';
+ var L=G('segLabels');L.textContent='';
+ ['rice','fodder','other','fallow'].forEach(function(k){var x=cur[k][0],w=cur[k][1];if(w<4)return;
+  if(k==='rice'){el('rect',{x:x+2,y:204,width:w-4,height:8,fill:'#7FB8E8',opacity:.85},g);
+    for(var i=x+8;i<x+w-6;i+=11){el('path',{d:'M'+i+' 210 L'+(i-4)+' 168 M'+i+' 210 L'+i+' 160 M'+i+' 210 L'+(i+4)+' 170',stroke:'#3E9A57','stroke-width':1.6,fill:'none','stroke-linecap':'round'},g);
+      el('path',{d:'M'+i+' 252 l-4 8 M'+i+' 252 l4 8 M'+i+' 214 V252',stroke:'#E9D9B8','stroke-opacity':.6,'stroke-width':1,fill:'none'},g);}}
+  if(k==='fodder'){for(var j=x+10;j<x+w-6;j+=15){el('ellipse',{cx:j,cy:194,rx:8,ry:14,fill:'#2F7D3E'},g);el('ellipse',{cx:j+5,cy:200,rx:6,ry:9,fill:'#3E9A57'},g);
+      el('path',{d:'M'+j+' 214 V268 M'+j+' 240 l-6 10 M'+j+' 240 l6 10',stroke:'#E9D9B8','stroke-opacity':.6,'stroke-width':1,fill:'none'},g);}}
+  if(k==='other'){var t=0;for(var q=x+9;q<x+w-6;q+=13){if(t%3===2){el('circle',{cx:q,cy:205,r:6,fill:'#7FA83B'},g);}else{el('path',{d:'M'+q+' 211 V180',stroke:'#B08E2E','stroke-width':1.6},g);el('ellipse',{cx:q,cy:177,rx:3,ry:7,fill:'#D9B54A'},g);}t++;}}
+  if(k==='fallow'){for(var f=x+6;f<x+w-8;f+=18){el('path',{d:'M'+f+' 208 l6 -4 l5 5 l6 -3',stroke:'#8D7752','stroke-width':1.3,fill:'none'},g);}}
+  var lx=x+6;el('text',{class:'lb',x:lx,y:132},L).textContent=NAME[k];
+  el('text',{class:'nm',x:lx,y:148},L).textContent=Math.round(k==='fallow'?state.mix.fallow:state.mix[k]).toLocaleString('en-US')+' ha';
+  el('path',{d:'M'+(x+1)+' 154 V196',stroke:'var(--muted)','stroke-opacity':.5,'stroke-dasharray':'2 3'},L);});}
+function setTags(kind){var g=G('tags');g.textContent='';if(!kind){g.classList.add('hide');return;}
+ var data=kind==='kc'?{rice:'Kc mid 1.20',fodder:'Kc mid 0.95',other:'Kc 1.05–1.20'}:{rice:'43,800 m³/ha',fodder:'39,200 m³/ha',other:'24,300–32,300'};
+ ['rice','fodder','other'].forEach(function(k){var x=cur[k][0]+6;var w=kind==='kc'?96:112;el('rect',{x:x,y:96,width:w,height:22,rx:11,fill:'var(--ink)'},g);el('text',{class:'nm',x:x+w/2,y:111,'text-anchor':'middle',style:'fill:var(--bg)'},g).textContent=data[k];});
+ g.classList.remove('hide');}
 
-var TY={river:{f:'#8CC6F5',r:2.2},water:{f:'#8CC6F5',r:2.4},loss:{f:'#C77B3F',r:2.4},vap:{f:'#E8F1F7',r:2},heat:{f:'#F3C873',r:2}};
-function circ(t,x,y){var T=TY[t],e=document.createElementNS(NS,'circle');e.setAttribute('r',T.r);e.setAttribute('fill',T.f);e.setAttribute('cx',x);e.setAttribute('cy',y);pt.appendChild(e);return e;}
-function rm(e){if(e.parentNode)e.parentNode.removeChild(e);}
-function sp(R,t,o){var a=pos(R,0),p={e:circ(t,a[0],a[1]),R:R,t:t,s:0,v:130*(.85+Math.random()*.3),stop:null,then:null,fx:null};if(o)for(var k in o)p[k]=o[k];ps.push(p);return p;}
-function drift(x,y,t,dy,life){ps.push({e:circ(t,x,y),fx:{x:x,y:y,dy:dy,life:life,age:0}});}
-function clearAll(){ps.forEach(function(p){rm(p.e);});ps=[];}
+/* ---------- particles ---------- */
+var ps=[],paused=false,stt={canal:0,heat:0,vap:0,loss:.425,perc:.44,rate:1};
+function dot(c,x,y,r){return el('circle',{cx:x,cy:y,r:r||2.6,fill:c},pt);}
+function add(p){ps.push(p);}
+function pick(){var tot=state.mix.rice+state.mix.fodder+state.mix.other,r=Math.random()*tot,k=r<state.mix.rice?'rice':(r<state.mix.rice+state.mix.fodder?'fodder':'other');return cur[k][0]+6+Math.random()*Math.max(1,cur[k][1]-12);}
+function spawnCanal(){var dx=pick(),r=Math.random();
+ if(r<stt.loss){var lx=172+Math.random()*(dx-172);add({e:dot('#7FB8E8',172,219),ph:[{x:lx,y:219,v:170},{x:lx,y:268+Math.random()*30,v:55,c:'var(--loss)'}]});}
+ else{var up=Math.random()>=stt.perc;add({e:dot('#7FB8E8',172,219),ph:up?[{x:dx,y:219,v:170},{x:dx,y:246,v:60},{x:dx,y:160,v:70,c:'#FFFFFF'},{x:dx+6,y:70,v:60,c:'#FFFFFF',fade:1}]:[{x:dx,y:219,v:170},{x:dx,y:246,v:60},{x:dx,y:330+Math.random()*30,v:45,c:'var(--loss)',fade:1}]});}}
+function spawnHeat(){var x=X0+Math.random()*XW;add({e:dot('var(--heat)',x,212,2.2),ph:[{x:x+4,y:120,v:60,fade:1}]});}
+function spawnVap(){var x=pick();add({e:dot('#FFFFFF',x,170,2.2),ph:[{x:x+5,y:80,v:60,fade:1}]});}
 var last=0;
 function loop(t){var dt=Math.min(.05,(t-last)/1000);last=t;
- if(!paused){for(var i=ps.length-1;i>=0;i--){var p=ps[i];
-  if(p.fx){var f=p.fx;f.age+=dt;var k=f.age/f.life;if(k>=1){rm(p.e);ps.splice(i,1);continue;}p.e.setAttribute('cy',f.y+f.dy*k);p.e.setAttribute('opacity',1-k);continue;}
-  var ns=p.s+p.v*dt;
-  if(p.stop!==null&&ns>=p.stop){var a=pos(p.R,p.stop);rm(p.e);ps.splice(i,1);
-    if(p.then==='leak')drift(a[0],a[1]+4,'loss',22,1.1);
-    else if(p.then==='perc')drift(a[0],a[1],'loss',16,1);
-    else if(p.then==='vap')drift(a[0],a[1],'vap',-34,1.3);
-    continue;}
-  if(ns>=p.R.L){rm(p.e);ps.splice(i,1);continue;}
-  p.s=ns;var b=pos(p.R,ns);p.e.setAttribute('cx',b[0]);p.e.setAttribute('cy',b[1]);}}
+ if(!paused){for(var i=ps.length-1;i>=0;i--){var p=ps[i],h=p.ph[0];if(!h){p.e.remove();ps.splice(i,1);continue;}
+  if(h.c&&!h.set){p.e.setAttribute('fill',h.c);h.set=1;}
+  var cx=+p.e.getAttribute('cx'),cy=+p.e.getAttribute('cy'),dx=h.x-cx,dy=h.y-cy,d=Math.hypot(dx,dy),s=h.v*dt;
+  if(!h.d0)h.d0=d||1;
+  if(d<=s){p.e.setAttribute('cx',h.x);p.e.setAttribute('cy',h.y);p.ph.shift();}
+  else{p.e.setAttribute('cx',cx+dx/d*s);p.e.setAttribute('cy',cy+dy/d*s);if(h.fade)p.e.setAttribute('opacity',Math.max(0,d/h.d0));}}}
  requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 setInterval(function(){if(paused||document.hidden)return;
- if(Math.random()<stt.river)sp(RV,'river',{v:95});
- if(stt.canal){var R=canalRoute();var r=Math.random();
-   if(r<stt.lossC){sp(R,'water',{stop:(R.c[1]+Math.random()*(R.c[2]-R.c[1]))*.98,then:'leak'});}
-   else if(r<stt.lossC+(1-stt.lossC)*stt.lossF){sp(R,'water',{stop:R.L-1,then:'perc'});}
-   else sp(R,'water',{stop:R.L-1,then:'vap'});}
- if(stt.et0){drift(206+Math.random()*186,204+Math.random()*266,'heat',-30,1.2);}
- if(stt.vapor){var g=Math.random();var gg=g<.62?geom.R:(g<.9?geom.F:geom.O);if(gg[1]>4)drift(212+Math.random()*172,gg[0]+Math.random()*gg[1],'vap',-30,1.2);}
-},150);
+ if(stt.canal&&Math.random()<stt.rate)spawnCanal();if(stt.heat)spawnHeat();if(stt.vap)spawnVap();},140);
+function clearP(){ps.forEach(function(p){p.e.remove();});ps=[];}
 
-function cam(n,ms){cancelAnimationFrame(cvr);var a=vb.slice(),b=CAM[n],t0=performance.now();ms=ms||1200;function f(t){var k=Math.min(1,(t-t0)/ms),e=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;vb=a.map(function(v,i){return v+(b[i]-v)*e;});svg.setAttribute('viewBox',vb.join(' '));if(k<1)cvr=requestAnimationFrame(f);}cvr=requestAnimationFrame(f);}
-function tm(ms,fn){timers.push(setTimeout(fn,ms));}
-function c(n,on){svg.classList.toggle(n,!!on);}
-function node(n){for(var i=1;i<=8;i++){var g=G('n'+i);g.classList.toggle('on',i===n);g.classList.toggle('done',i<n);}var p=G('pN');p.setAttribute('y',52+(n-1)*60);p.classList.add('show');}
-var PXK=44.5;
-function gauge(need,avail,txt,sub){G('gNeed').setAttribute('width',Math.max(0,need*PXK));var l=G('gAvail');if(avail==null){l.setAttribute('opacity',0);}else{var x=28+avail*PXK;l.setAttribute('x1',x);l.setAttribute('x2',x);l.setAttribute('opacity',1);}G('gTxt').textContent=txt||'';G('gSub').textContent=sub||'';}
-var HA=188094.01,SC=268/HA;
-function fmt(n){return Math.round(n).toLocaleString('en-US');}
-function mix(r,f,o,x){var y=204;[['R',r],['F',f],['O',o],['X',x]].forEach(function(it){var h=Math.max(0,it[1]*SC-2);var s=G('s'+it[0]);s.setAttribute('y',y);s.setAttribute('height',h);geom[it[0]]=[y,h];G('l'+it[0]).setAttribute('y',y+22);G('a'+it[0]).setAttribute('y',y+22);y+=it[1]*SC;});
- G('aR').textContent=fmt(r)+' ha';G('aF').textContent=fmt(f)+' ha';G('aO').textContent=fmt(o)+' ha';G('aX').textContent=fmt(x)+' ha';
- var on=x>0;G('lX').setAttribute('opacity',on?1:0);G('aX').setAttribute('opacity',on?1:0);}
-function river(w){G('river').setAttribute('stroke-width',w);}
-function B(id,v,t,k){G('v'+id).textContent=v;var b=G('b'+id);b.textContent=t;b.className='bd '+k;}
-function card(id,on){G(id).classList.toggle('show',!!on);}
-function gaugeOn(on){G('gauge').style.opacity=on?1:0;card('hist',!on);}
-function base(){B('A','100 %','Normal year','ok');B('N','7.30 km³','Model estimate','info');B('L','188,094 ha','100 %','ok');G('scen').textContent='Normal year · 2025 crop mix';}
-function R0(){CL.forEach(function(n){c(n,0);});stt.canal=0;stt.et0=0;stt.vapor=0;stt.river=1;river(22);card('res',0);gaugeOn(true);mix(81696.6,70100,36297.41,0);base();}
-function note(t){G('nbar').textContent=t;}
+/* ---------- scene state ---------- */
+var state={mix:BASE};
+function setMix(m,animate){state.mix=m;G('plantsG').style.opacity=0;G('segLabels').style.opacity=0;drawSegs(m,animate?1300:0);
+ setTimeout(function(){plants();G('plantsG').style.opacity=1;G('segLabels').style.opacity=1;},animate?1400:0);}
+function river(f){var top=226+(1-f)*90;G('rw').setAttribute('y',top);G('rLvl').textContent=f>=1?'normal flow':Math.round(f*100)+' % of normal';}
+function show(id,on){G(id).classList.toggle('hide',!on);}
+function reset(){clearP();stt.canal=0;stt.heat=0;stt.vap=0;stt.rate=1;sv.classList.remove('hot');show('heat',0);show('sig',0);show('thermoG',0);setTags(null);river(1);if(state.mix!==BASE)setMix(BASE,false);}
 
-(function(){var h=[2,9,27,86,150,182,232,220,241,224,203,137,104,82,43,33,13,10,2],g=G('hbars'),x0=28,w=356/20,mx=241;
- h.forEach(function(v,i){var bh=v/mx*42,x=x0+(i+1)*w;var r=document.createElementNS(NS,'rect');r.setAttribute('x',x+1);r.setAttribute('y',566-bh);r.setAttribute('width',w-2);r.setAttribute('height',bh);
- var lo=5.25+i*.25;r.setAttribute('fill',(lo>=6.0&&lo<8.75)?'#5AA9FF':'#2E5E86');g.appendChild(r);});})();
+/* ---------- key figures ---------- */
+function bars(rows,max,unit){var h=rows.length*34+8,s='<svg viewBox="0 0 420 '+h+'" role="img">';rows.forEach(function(r,i){var y=i*34+4,w=Math.max(2,r[1]/max*200);
+ s+='<text x="0" y="'+(y+17)+'" fill="currentColor">'+r[0]+'</text><rect x="150" y="'+(y+4)+'" width="'+w+'" height="18" rx="2" fill="'+r[2]+'"/><text x="'+(156+w)+'" y="'+(y+17)+'" fill="currentColor" style="font-family:var(--mono)">'+r[3]+'</text>';});return s+'</svg>';}
+function hist(){var h=[2,9,27,86,150,182,232,220,241,224,203,137,104,82,43,33,13,10,2],s='<svg viewBox="0 0 420 130" role="img"><title>Histogram of 2,000 runs</title>',w=400/19;
+ h.forEach(function(v,i){var bh=v/241*90,lo=5.25+i*.25;s+='<rect x="'+(10+i*w+1)+'" y="'+(100-bh)+'" width="'+(w-2)+'" height="'+bh+'" fill="'+((lo>=6.0&&lo<8.75)?'var(--river)':'var(--line)')+'"/>';});
+ s+='<line x1="'+(10+(7.30-5.25)/.25*w)+'" y1="4" x2="'+(10+(7.30-5.25)/.25*w)+'" y2="100" stroke="var(--heat)" stroke-width="2"/>';
+ s+='<text x="10" y="120" fill="currentColor" style="font-family:var(--mono)">5.25</text><text x="410" y="120" text-anchor="end" fill="currentColor" style="font-family:var(--mono)">10.0 km³</text><text x="'+(14+(7.30-5.25)/.25*w)+'" y="14" fill="var(--heat)">base 7.30</text></svg>';return s;}
+function fig(cap,big,unit,pill,body){G('fig').innerHTML='<div class="cap">'+cap+'</div><div class="big">'+big+(unit?' <small>'+unit+'</small>':'')+'</div>'+(pill?'<span class="pill '+pill[0]+'">'+pill[1]+'</span>':'')+(body||'');}
 
+/* ---------- stages ---------- */
+var PH=['Input','Input','Water demand','Water demand','Water demand','Optimisation','Scenarios','Decision'];
 var S=[
-{p:'Input',t:'Climate and crop data come in',d:'Daily weather for 2010–2025 (temperature, humidity, wind, sunshine, rain) comes from NASA POWER. It was compared with the Kyzylorda weather station over 5,699 days. Crop areas for 2025 come from official statistics: 188,094 ha, 43 % of it rice.',ms:9500,
- f:function(){R0();node(1);c('s-data',1);gauge(0,null,'','');note('Inputs: NASA POWER weather (reanalysis), official 2025 crop areas (stat.gov.kz), FAO-56 crop parameters.');cam('Sky',1300);tm(5200,function(){cam('F',1300);});}},
-{p:'Input',t:'Data are checked and labelled',d:'Every value gets a unit (hectares and cubic metres; 1 mm of water on 1 ha = 10 m³), a source and a status: real, assumed or simulated. Crop areas are real data; field and canal efficiencies are assumptions taken from FAO guidance.',ms:8500,
- f:function(){R0();node(2);c('s-tag',1);gauge(0,null,'','');note('96 source records with links. NASA daily maximum temperature is 1.6 °C lower than the station on average, and the model keeps that bias visible.');cam('F',1200);}},
-{p:'Water demand model',t:'Heat and dry air pull water out: ET₀',d:'The FAO-56 Penman–Monteith equation turns each day of weather into reference evapotranspiration (ET₀): how much water a reference grass surface would lose. Over the growing season this is about 1,390 mm in an average year.',ms:9500,
- f:function(){R0();node(3);stt.et0=1;gauge(0,null,'','');note('Seasonal ET₀ ≈ 1,387 mm (2010–2025 mean, model).');cam('Sky',1300);tm(4200,function(){cam('Fields',1300);});}},
-{p:'Water demand model',t:'Each crop needs its own share: ETc',d:'Crop water need ETc = ET₀ × Kc. Kc is the FAO-56 crop coefficient, which changes as the crop grows. Rice (Kc up to 1.20) and alfalfa fodder (0.95) cover most of the land. Effective rain is subtracted, but in this desert climate it covers very little.',ms:9500,
- f:function(){R0();node(4);stt.vapor=1;c('s-kc',1);gauge(2.36,null,'2.36 km³ at the plant','Water the crops themselves use (ETc minus effective rain)');B('N','2.36 km³','At the plant','info');note('The model has eight crop groups. The drawing merges six smaller groups into one strip so it stays readable.');cam('Fields',1300);}},
-{p:'Water demand model',t:'From the plant back to the river',d:'Not all water reaches the crop. Fields lose water (base field efficiency 60 %), rice paddies also need water to flood and percolate, and canals lose more on the way (base efficiency 57.5 %). So 2.36 km³ at the plant becomes 4.20 km³ at the field and 7.30 km³ taken from the river.',ms:13000,
- f:function(){R0();node(5);stt.canal=1;c('s-perha',1);gauge(2.36,null,'2.36 km³ at the plant','');B('N','2.36 km³','At the plant','info');note('Orange dots: water lost in the canal or sinking below the field. White dots: water the crops actually use.');cam('F',1200);
-  tm(3500,function(){gauge(4.20,null,'4.20 km³ at the field','Plus field losses and rice flooding');B('N','4.20 km³','At the field','info');});
-  tm(7000,function(){gauge(7.30,null,'7.30 km³ from the river','Plus canal losses · 5–95 % range 6.17–8.75 km³');B('N','7.30 km³','From the river','info');});}},
-{p:'Optimisation',t:'A short year: the optimiser picks the crop mix',d:'Say the river brings only 70 % of normal water. A linear programme chooses the area of each crop group within that budget and the rules: each crop keeps at least half its area, food crops keep at least 80 %, small crops grow at most 30 %. It keeps 74 % of the land in production. An equal cut for every crop keeps 70 % and breaks the food rule.',ms:15000,
- f:function(){R0();node(6);stt.canal=1;gauge(7.30,7.30,'Need 7.30 · normal supply','');cam('F',1000);
-  tm(1800,function(){river(13);stt.river=.55;gauge(7.30,5.11,'Need 7.30 · only 5.11 available','Yellow line: water available at 70 % of normal');B('A','70 %','Short year','warn');G('scen').textContent='Scenario: 70 % of normal water';note('The water share and the rules are a scenario chosen by the user.');});
-  tm(4800,function(){mix(51751.43,40196.89,47186.63,48959.06);gauge(5.11,5.11,'Plan uses 5.11 km³','Fits the budget exactly');B('N','5.11 km³','Fits the budget','ok');B('L','139,135 ha','74.0 % kept','warn');cam('Fields',1300);});
-  tm(8600,function(){card('res',1);note('Binding rules: the water budget, the food-crop minimum and the growth limits of the small crops. At the margin, each extra million m³ would keep 25.5 ha in production.');});}},
-{p:'Scenario analysis',t:'Stress tests: heat, drought and uncertainty',d:'The same equations run for hotter and drier seasons: +2 °C raises river water demand by 5.6 %, and the observed 2021 season, the most demanding of 2010–2025, needed 7.4 % more. 2,000 Latin hypercube runs vary ten uncertain inputs. Below 64.6 % of normal water no plan can meet the rules, and the tool says so.',ms:13500,
- f:function(){R0();node(7);c('s-hot',1);stt.et0=1;stt.vapor=1;gauge(7.30,null,'Normal year: 7.30 km³','');cam('F',1000);G('scen').textContent='Stress tests';
-  tm(1500,function(){gauge(7.72,null,'+2 °C: 7.72 km³ (+5.6 %)','Sensitivity experiment, humidity kept the same');B('N','7.72 km³','+2 °C · +5.6 %','warn');});
-  tm(4500,function(){gauge(7.84,null,'2021 season: 7.84 km³ (+7.4 %)','Observed climate of the most demanding year');B('N','7.84 km³','2021 · +7.4 %','warn');});
-  tm(7500,function(){gaugeOn(false);c('s-hot',0);stt.et0=0;B('N','6.17–8.75','5–95 % of runs, km³','info');note('The spread comes from assumed input ranges. It is a sensitivity range, not a confidence interval.');cam('Low',1300);});
-  tm(11000,function(){B('A','< 64.6 %','No feasible plan','warn');note('Breaking point: below 64.6 % of normal water no plan meets the protective rules. The tool reports the shortfall instead of breaking a rule.');});}},
-{p:'Decision support',t:'Result: a plan a water office can read',d:'The Decision Lab runs the optimiser live in any browser. It shows the crop mix, which rule limits the plan, what one more million m³ is worth and where no plan works. The browser solver matches the reference Python solver on 111 test problems, and 320 automated tests check the numbers.',ms:0,
- f:function(){R0();node(8);stt.canal=1;gauge(7.30,null,'Normal year: 7.30 km³','Same land, new mix: saves 3.4 % (2.1–5.9 %)');note('Key finding: on the same land, changing the mix saves only 3.4 %, because 77 % of the water freed from rice is used again by the crops that replace it, mostly thirsty fodder.');cam('F',1400);}}
+{s:'Weather and crops',t:'Weather and crop data come in',d:'Daily temperature, humidity, wind, sunshine and rain for 2010–2025 come from NASA POWER. We checked them against the Kyzylorda weather station over 5,699 days. The crop areas of 2025 come from official statistics: 188,094 ha, and 43 % of it is rice.',
+ see:'<b>In the drawing:</b> the satellite and the station send data into the model. The bands below are the real 2025 crop areas, drawn to scale.',ms:9000,
+ f:function(){show('sig',1);fig('2025 sown area, Kyzylorda Region','188,094','ha',['real','official statistics'],bars([['Rice',81697,'#5DBB7A','81,697'],['Fodder',70100,'#2F7D3E','70,100'],['Other 6 groups',36297,'#D9B54A','36,297']],81697));}},
+{s:'Checks and labels',t:'Every value gets a unit, a source and a status',d:'Areas are in hectares and water in cubic metres: 1 mm of water on 1 ha is 10 m³. Each number in the data files is marked real, assumed or simulated. NASA daily maximum temperature runs 1.6 °C lower than the station, and the model keeps that bias visible.',
+ see:'<b>In the drawing:</b> nothing moves yet. The model only starts calculating once every input is labelled.',ms:8500,
+ f:function(){fig('Records in the source list','96','sources',['real','with links'],'<p style="margin:10px 0 0">Crop areas, prices and water limits are <span class="pill real">real</span>. Field and canal efficiencies are <span class="pill assumed">assumed</span> from FAO ranges. Withdrawals and savings are <span class="pill model">model</span> results.</p>');}},
+{s:'ET₀',t:'Sun, heat and dry wind pull water out: ET₀',d:'The FAO-56 Penman–Monteith equation turns each day of weather into reference evapotranspiration, ET₀: the water a reference grass surface would lose. Over the growing season this is about 1,390 mm in an average year, while rain gives only a small fraction of that.',
+ see:'<b>In the drawing:</b> heat waves from the sun and orange dots leaving the ground.',ms:9000,
+ f:function(){show('heat',1);stt.heat=1;fig('Seasonal ET₀, average year 2010–2025','1,387','mm',['model','FAO-56 Penman–Monteith']);}},
+{s:'ETc',t:'Each crop needs its own share: ETc = ET₀ × Kc',d:'The crop coefficient Kc from FAO-56 scales ET₀ to each crop and growth stage. Rice reaches Kc 1.20 and alfalfa fodder 0.95, and together they cover 81 % of the land. After effective rain is subtracted, the crops themselves use about 2.36 km³ in a season.',
+ see:'<b>In the drawing:</b> white dots rise from the plants. Tags show the peak Kc of each band.',ms:9000,
+ f:function(){stt.vap=1;setTags('kc');fig('Water the crops themselves use','2.36','km³',['model','ETc minus effective rain']);}},
+{s:'River withdrawal',t:'From the plant back to the river',d:'Fields lose water (base efficiency 60 %), rice paddies also need water to flood and to percolate, and canals lose more on the way (base efficiency 57.5 %). So 2.36 km³ at the plant means 4.20 km³ delivered to the fields and 7.30 km³ taken from the river.',
+ see:'<b>In the drawing:</b> blue dots leave the river. Orange dots sink from the canal and below the roots; white dots are the water the crops use.',ms:12000,
+ f:function(){stt.canal=1;setTags('perha');fig('Water taken from the Syr Darya','7.30','km³',['model','5–95 %: 6.17–8.75'],bars([['From the river',7.30,'var(--river)','7.30'],['Reaches the field',4.20,'#7FB8E8','4.20'],['Used by crops',2.36,'var(--crop)','2.36']],7.30)+'<p style="margin:6px 0 0;font-size:13.5px;color:var(--muted)">Efficiencies are assumptions, so this total is uncertain and higher than the official limits of 3.2–3.7 km³.</p>');}},
+{s:'Short year',t:'A short year: the optimiser rebuilds the crop mix',d:'Suppose the river brings only 70 % of normal water. A linear programme picks the area of each crop group within that budget and the rules: every crop keeps at least half its area, food crops keep at least 80 %, small crops grow by at most 30 %. Rice and fodder shrink, small crops grow, and some land is left unsown.',
+ see:'<b>In the drawing:</b> the river drops, then the bands resize to the optimised plan.',ms:14000,
+ f:function(){stt.canal=1;tm(1200,function(){river(.7);stt.rate=.7;});tm(3200,function(){setMix(SHORT,true);});
+  fig('Land kept in production at 70 % water','74.0','%',['model','scenario with assumed rules'],bars([['Optimised plan',74.0,'var(--crop)','74.0 %'],['Equal cut',70.0,'var(--heat)','70.0 %']],100)+'<p style="margin:6px 0 0;font-size:13.5px;color:var(--muted)">The equal cut also breaks the food-crop rule. At the margin, each extra million m³ keeps 25.5 ha in production.</p>');}},
+{s:'Stress tests',t:'Hotter seasons, a drought year and 2,000 what-ifs',d:'The same equations run with +1 to +4 °C and less rain. +2 °C raises river water demand by 5.6 %, and the real 2021 season, the most demanding of 2010–2025, needed 7.4 % more. 2,000 Latin hypercube runs vary ten uncertain inputs. Below 64.6 % of normal water no plan can meet the rules, and the tool says so.',
+ see:'<b>In the drawing:</b> the sun turns red, the thermometer rises, more water leaves the plants.',ms:12500,
+ f:function(){sv.classList.add('hot');show('thermoG',1);show('heat',1);stt.heat=1;stt.vap=1;
+  fig('River water across 2,000 uncertainty runs','6.17–8.75','km³, 5–95 %',['model','sensitivity range, not a forecast'],hist()+bars([['+2 °C season',5.6,'#E4572E','+5.6 %'],['2021 season',7.4,'var(--heat)','+7.4 %']],8));}},
+{s:'Decision Lab',t:'A plan a water office can check and argue with',d:'The Decision Lab runs the optimiser live in the browser. It shows the crop mix, which rule limits the plan, what one more million m³ is worth, and where no plan works. The key lesson: on the same land, reshuffling crops saves only 3.4 % (2.1–5.9 %), because 77 % of the water freed from rice is used again by the crops that replace it.',
+ see:'<b>In the drawing:</b> the normal season runs again. Open the <a href="planner.html" target="_blank" rel="noopener">Decision Lab</a> to set your own water share and rules.',ms:0,
+ f:function(){stt.canal=1;fig('Saving from a new mix on the same land','3.4','%',['model','2.1–5.9 % across 2,000 runs'],bars([['Water freed by rice',1.07,'var(--river)','1.07 km³'],['Used again by others',0.83,'var(--heat)','0.83 km³ (77 %)']],1.07)+'<p style="margin:6px 0 0;font-size:13.5px;color:var(--muted)">Browser solver = reference solver on 111 test problems · 320 automated tests.</p>');}}
 ];
-var sl=G('scs');
-S.forEach(function(s,i){
- var li=document.createElement('li'),b=document.createElement('button');b.type='button';b.className='st';b.setAttribute('aria-current','false');
- var n=document.createElement('span');n.className='num';n.textContent=i+1;
- var tx=document.createElement('span');tx.className='tx';
- var ph=document.createElement('span');ph.className='ph';ph.textContent=s.p;
- var h=document.createElement('b');h.textContent=s.t;
- var d=document.createElement('span');d.className='sd';d.textContent=s.d;
- tx.appendChild(ph);tx.appendChild(h);tx.appendChild(d);b.appendChild(n);b.appendChild(tx);li.appendChild(b);sl.appendChild(li);
- b.onclick=function(){paused=false;svg.classList.remove('paused');go(i);};
-});
-function go(i){timers.forEach(clearTimeout);timers=[];cur=i;clearAll();var s=S[i];
- Array.prototype.forEach.call(sl.children,function(li,k){li.firstChild.setAttribute('aria-current',k===i?'step':'false');});
- G('pp').textContent='Pause';s.f();
- if(s.ms>0)tm(s.ms,function(){go(i+1);});else G('pp').textContent='Replay';}
-G('pv').onclick=function(){paused=false;svg.classList.remove('paused');go(Math.max(0,cur-1));};
-G('nx').onclick=function(){paused=false;svg.classList.remove('paused');go(Math.min(S.length-1,cur+1));};
-G('pp').onclick=function(){
- if(G('pp').textContent==='Replay'){go(0);return;}
- paused=!paused;svg.classList.toggle('paused',paused);
- if(paused){timers.forEach(clearTimeout);timers=[];cancelAnimationFrame(cvr);G('pp').textContent='Resume';}
- else{go(cur);}
-};
-go(0);
-try{if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){paused=true;svg.classList.add('paused');timers.forEach(clearTimeout);timers=[];G('pp').textContent='Resume';}}catch(e){}
 
-var D={
-1:{n:"NASA POWER weather",r:"Daily temperature, humidity, wind, solar radiation and rain for 2010–2025 at 44.8° N, 65.5° E.",i:"NASA POWER Daily API (agro community)",o:"ET₀ calculation",e:["model","reanalysis data"],t:"Checked against the Kyzylorda weather station (NOAA GSOD) over 5,699 days: daily maximum temperature is 1.6 °C lower on average.",l:[2,3]},
-2:{n:"Kyzylorda station",r:"Ground check for the climate input.",i:"NOAA GSOD station 38062",o:"Input check only (not used in the calculation)",e:["real","observed"],t:"Most station minimum temperatures are derived values, so the minimum-temperature comparison is reported as inconclusive.",l:[1]},
-3:{n:"Reference ET₀",r:"How much water a reference grass surface loses each day.",i:"Daily weather",o:"Crop water need ETc",e:["model","FAO-56 equation"],t:"FAO-56 Penman–Monteith. About 1,387 mm over the season in an average year.",l:[1,4]},
-4:{n:"Crop coefficients Kc",r:"Scale ET₀ to each crop and growth stage.",i:"FAO-56 tables",o:"ETc",e:["real","literature"],t:"Rice: 1.05 / 1.20 / 0.75. Alfalfa fodder: 0.40 / 0.95 / 0.90. Some groups use the closest FAO crop (for example tomato for vegetables), and this is labelled in the data.",l:[3,5]},
-5:{n:"ETc and effective rain",r:"Water the crops actually use, minus the rain that reaches the roots.",i:"ET₀ × Kc; daily rain",o:"Water at the plant (2.36 km³)",e:["model","USDA-SCS rain method"],t:"Rain covers only a small part of the need in this desert climate.",l:[4,6]},
-6:{n:"Crop areas 2025",r:"How much land each crop group uses.",i:"Official statistics (stat.gov.kz)",o:"Water totals; starting point for the optimiser",e:["real","official"],t:"188,094 ha in 8 groups: rice 81,697; fodder 70,100; wheat 10,412; melons 8,500; vegetables 6,700; oilseeds 6,400; other grain 2,686; potato 1,600.",l:[5,9]},
-7:{n:"Rice flooding",r:"Extra water rice paddies need beyond ETc.",i:"FAO rice guidance; SANIIRI field norms",o:"Water at the field",e:["assumed","literature"],t:"Saturation and flooding plus percolation (base 6 mm per day; 4–8 mm tested).",l:[5,8]},
-8:{n:"Field & canal efficiency",r:"Share of water that is not lost on the way.",i:"FAO irrigation efficiency guidance",o:"River withdrawal (7.30 km³)",e:["assumed","FAO ranges"],t:"Field 0.60 (0.50–0.70), canal 0.575 (0.40–0.65). These assumptions explain most of the uncertainty and why model totals exceed official limits.",l:[7,9]},
-9:{n:"LP optimiser",r:"Chooses the area of each crop group.",i:"Water budget, rules, goal",o:"Crop mix, binding rules, shadow prices",e:["model","SciPy HiGHS and browser solver"],t:"Goals: keep the most land, keep the most food land, or use the least water. It never breaks a rule: if no plan fits, it reports the shortfall.",l:[6,10,11]},
-10:{n:"Planning rules",r:"Limits a real plan must respect.",i:"User settings",o:"Optimiser constraints",e:["assumed","user scenario"],t:"Example used here: each crop keeps at least 50 % of its area, food crops at least 80 %, small crops grow at most 30 %.",l:[9]},
-11:{n:"Scenarios & uncertainty",r:"Shows how far the answer can move.",i:"+1…+4 °C, −15…−50 % rain, the 2021 season, water supply share; 2,000 LHS runs over 10 inputs",o:"Ranges for water and savings",e:["model","sensitivity"],t:"Withdrawal 6.17–8.75 km³ (5–95 %); same-land saving 2.1–5.9 %, positive in every run.",l:[9,12]},
-12:{n:"Decision Lab",r:"The page a planner actually uses.",i:"All of the above",o:"Plan, explanation, Pareto curve",e:["model","in-browser"],t:"Runs in any browser with no installation. Matches the reference solver on 111 test problems; 320 automated tests in total.",l:[9,11]}
-};
-var chips=G('chips'),dt=G('detail'),chipEls={};
-function row(box,k,v){var d=document.createElement('div');d.className='row';var b=document.createElement('b');b.textContent=k;d.appendChild(b);if(typeof v==='string'){var s=document.createElement('span');s.textContent=v;d.appendChild(s);}else d.appendChild(v);box.appendChild(d);}
-function pick(id){var x=D[id];if(!x)return;
- Object.keys(chipEls).forEach(function(k){chipEls[k].setAttribute('aria-pressed',+k===id?'true':'false');});
- dt.textContent='';var h=document.createElement('h3');h.textContent=id+'. '+x.n;dt.appendChild(h);
- row(dt,'Role',x.r);row(dt,'Input',x.i);row(dt,'Output',x.o);
- var ev=document.createElement('span');var e1=document.createElement('span');e1.className='ev '+x.e[0];e1.textContent=x.e[0];ev.appendChild(e1);ev.appendChild(document.createTextNode(' '+x.e[1]));row(dt,'Evidence',ev);
- row(dt,'Note',x.t);
- var w=document.createElement('div');w.className='lks';x.l.forEach(function(k){var a=document.createElement('button');a.type='button';a.className='lk';a.textContent=k+'. '+D[k].n;a.onclick=function(){pick(k);};w.appendChild(a);});row(dt,'Connected to',w);}
-Object.keys(D).forEach(function(k){var b=document.createElement('button');b.type='button';b.className='chip';b.setAttribute('aria-pressed','false');b.textContent=k+'. '+D[k].n;b.onclick=function(){pick(+k);};chips.appendChild(b);chipEls[k]=b;});
-pick(9);
+/* ---------- rail + controls ---------- */
+var rail=G('rail'),btns=[],phs=[],timers=[],at=0,pgT=0,pgDur=0,pgStart=0;
+var spans=[['Input',0,2],['Water demand model',2,3],['Optimisation',5,1],['Scenarios',6,1],['Decision',7,1]];
+spans.forEach(function(sp){var d=document.createElement('div');d.className='ph';d.textContent=sp[0];d.style.gridColumn=(sp[1]+1)+' / span '+sp[2];rail.appendChild(d);phs.push(sp);});
+S.forEach(function(s,i){var b=document.createElement('button');b.type='button';b.className='stp';b.style.gridColumn=String(i+1);
+ var n=document.createElement('span');n.className='n';n.textContent=String(i+1).padStart(2,'0');var t=document.createElement('span');t.className='t';t.textContent=s.s;
+ b.appendChild(n);b.appendChild(t);b.onclick=function(){paused=false;sv.classList.remove('paused');go(i);};rail.appendChild(b);btns.push(b);});
+function tm(ms,fn){timers.push(setTimeout(fn,ms));}
+function go(i){timers.forEach(clearTimeout);timers=[];at=i;var s=S[i];reset();
+ btns.forEach(function(b,k){b.setAttribute('aria-current',k===i?'step':'false');});
+ Array.prototype.forEach.call(rail.querySelectorAll('.ph'),function(d,k){var sp=phs[k];d.classList.toggle('on',i>=sp[1]&&i<sp[1]+sp[2]);});
+ G('sOf').textContent='Stage '+(i+1)+' of 8 · '+PH[i];G('sT').textContent=s.t;G('sD').textContent=s.d;G('sS').innerHTML=s.see;
+ s.f();G('pp').textContent=s.ms?'Pause':'Replay';pgDur=s.ms;pgStart=performance.now();
+ if(s.ms)tm(s.ms,function(){go(i+1);});}
+(function prog(){var w=0;if(pgDur&&!paused)w=Math.min(1,(performance.now()-pgStart)/pgDur);else if(!pgDur)w=1;else w=null;if(w!==null)G('pg').style.width=(w*100)+'%';requestAnimationFrame(prog);})();
+G('pv').onclick=function(){paused=false;sv.classList.remove('paused');go(Math.max(0,at-1));};
+G('nx').onclick=function(){paused=false;sv.classList.remove('paused');go(Math.min(7,at+1));};
+G('pp').onclick=function(){if(G('pp').textContent==='Replay'){go(0);return;}
+ paused=!paused;sv.classList.toggle('paused',paused);
+ if(paused){timers.forEach(clearTimeout);timers=[];G('pp').textContent='Resume';}else go(at);};
+
+/* ---------- ledger ---------- */
+var LG=[
+['188,094 ha','Sown area of Kyzylorda Region, 2025 (43 % rice)','real','stat.gov.kz, sown area tables'],
+['3.7 / 3.2 km³','Official growing-season irrigation limit, 2024 / 2026','real','Kyzylorda News 2024; 24.kz 2026'],
+['5,699 days; −1.6 °C','NASA POWER checked against Kyzylorda station; daily max temperature bias','real','NOAA GSOD station 38062'],
+['1,387 mm','Seasonal reference evapotranspiration ET₀, average year','model','FAO-56 Penman–Monteith on NASA POWER 2010–2025'],
+['Kc 1.20 / 0.95','Peak crop coefficient of rice / alfalfa fodder','real','FAO-56, Chapter 6'],
+['0.60 / 0.575','Field / canal efficiency, base values (0.50–0.70 / 0.40–0.65 tested)','assumed','FAO Training Manual 4, Annex I'],
+['2.36 → 4.20 → 7.30 km³','Water at the plant → at the field → from the river, 2025 mix, average year','model','src/ model outputs'],
+['6.17–8.75 km³','5–95 % range of river water across 2,000 Latin hypercube runs','model','outputs/uncertainty_summary.csv'],
+['74.0 % vs 70.0 %','Land kept at 70 % water: optimised plan vs equal cut','model','scenario with user-set rules'],
+['25.5 ha','Land kept per extra million m³ in that scenario (shadow price)','model','LP dual value'],
+['64.6 %','Water share below which the protective rules cannot be met','model','LP feasibility boundary'],
+['3.4 % (2.1–5.9 %)','Saving from a new crop mix on the same land (±30 % per crop)','model','LP + uncertainty runs'],
+['77 %','Share of water freed from rice that replacement crops use again','model','decision attribution'],
+['+5.6 % / +7.4 %','River water demand at +2 °C / in the 2021 season','model','stress experiments']
+];
+var lg=G('lg');LG.forEach(function(r){var tr=document.createElement('tr');
+ var a=document.createElement('td');a.className='v';a.textContent=r[0];var b=document.createElement('td');b.textContent=r[1];
+ var c=document.createElement('td');var p=document.createElement('span');p.className='pill '+r[2];p.textContent=r[2];c.appendChild(p);
+ var d=document.createElement('td');d.textContent=r[3];tr.appendChild(a);tr.appendChild(b);tr.appendChild(c);tr.appendChild(d);lg.appendChild(tr);});
+
+drawSegs(BASE);plants();go(0);
+try{if(matchMedia('(prefers-reduced-motion: reduce)').matches){paused=true;sv.classList.add('paused');timers.forEach(clearTimeout);timers=[];G('pp').textContent='Resume';}}catch(e){}
 </script>
 
 </body>
